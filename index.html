@@ -21,7 +21,7 @@ body{background:#f3f8f5}
 .aal img{width:52px;height:52px;object-fit:contain}
 .brandrow{display:flex;align-items:center;gap:10px}
 .hero{position:relative;overflow:hidden;min-height:190px;border-radius:20px;margin-bottom:16px;background:#fff;border:1px solid #d7e8df;box-shadow:0 10px 30px rgba(24,96,59,.08)}
-.hero:before{content:"";position:absolute;inset:0;background:url('assets/palm-banner.svg') center bottom/cover no-repeat;opacity:.9}
+.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#eefaf3 0%,#d9f1e5 48%,#b9dfc9 100%);opacity:1}
 .hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.98) 0%,rgba(255,255,255,.88) 42%,rgba(255,255,255,.18) 100%)}
 .hero-content{position:relative;z-index:1;padding:27px 30px;max-width:700px}
 .hero-content h2{font-size:30px;margin:0;color:#103b2b}
@@ -35,6 +35,8 @@ body{background:#f3f8f5}
 .export{background:#eff9f3;color:#087044;border-color:#b9ddca;font-weight:700}
 @media(max-width:1200px){.cards{grid-template-columns:repeat(3,1fr)}.horizontal{grid-template-columns:1fr 1fr}.main{padding:16px}}
 @media(max-width:720px){.side{width:100%}.main{margin-left:0;width:100%}.horizontal{grid-template-columns:1fr}.hero-content h2{font-size:23px}.cards{grid-template-columns:repeat(2,1fr)}}
+.hero-art{position:absolute;right:0;top:0;width:48%;height:100%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden}.hero-art svg{width:100%;height:100%;object-fit:cover;display:block}.hero-content{padding-right:34%}.nav{margin-top:2px}
+@media(max-width:720px){.hero{min-height:230px}.hero-content{padding-right:20px}.hero-art{width:100%;height:105px;top:auto;bottom:0;opacity:.5}.hero-art svg{height:105px}.hero-content{padding-bottom:115px}}
 </style>
 </head>
 <body>
@@ -45,9 +47,9 @@ body{background:#f3f8f5}
   <div><b>ASTRA AGRO LESTARI</b><span>Plantation Management</span></div>
 </div>
 <div class="rania">
-  <img src="assets/rania-logo.svg" alt="RANIA" style="width:46px;height:46px">
+  <div class="rmark" aria-label="RANIA logo">R</div>
   <div><h1>RANIA</h1><p>Real-time Attendance & MCU Intelligence Analytics</p></div>
-</div><div><h1>RANIA</h1><p>Real-time Attendance & MCU Intelligence Analytics</p></div></div>
+</div>
 <nav class="nav"><button class="active" onclick="go('dashboard')">▦ &nbsp; Dashboard</button><button onclick="go('participants')">♙ &nbsp; Participants</button><button onclick="go('hours')">▥ &nbsp; Hourly MCU</button><button onclick="go('participants')">▤ &nbsp; Reports</button><button onclick="go('participants')">▱ &nbsp; Data Management</button></nav>
 <div class="sidefoot">Healthy People<br>Sustainable Plantation<br>Better Tomorrow</div>
 </aside>
@@ -58,6 +60,26 @@ body{background:#f3f8f5}
 <h2>Medical Check-Up Monitoring</h2>
 <p>Kontrol kehadiran peserta secara real-time, per Company, Afdeling, status, dan jam pelaksanaan.</p>
 <div class="controls"><button class="btn primary" onclick="document.getElementById('file').click()">＋ Import Master MCU</button><input id="file" type="file" accept=".xlsx,.xls,.csv" hidden><button class="btn export" onclick="exportXLSX()">↓ Export Data</button><button class="btn" onclick="location.reload()">↻ Refresh</button></div>
+</div>
+<div class="hero-art" aria-hidden="true">
+  <svg viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dff6e9"/><stop offset="1" stop-color="#9ed1b4"/></linearGradient>
+      <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0c7547"/><stop offset="1" stop-color="#2ea66c"/></linearGradient>
+    </defs>
+    <rect width="520" height="220" rx="20" fill="url(#sky)"/>
+    <path d="M0 180 Q140 125 280 170 T520 145 V220 H0Z" fill="#77b98e" opacity=".65"/>
+    <path d="M285 218 C302 165 305 105 287 57" stroke="#72512e" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <path d="M290 65 C250 42 215 42 175 53 C218 65 250 74 286 74Z" fill="url(#leaf)"/>
+    <path d="M291 61 C315 25 352 10 394 8 C361 34 333 55 300 70Z" fill="url(#leaf)"/>
+    <path d="M295 70 C350 55 397 65 439 91 C389 86 347 82 298 79Z" fill="url(#leaf)"/>
+    <path d="M286 67 C259 30 224 12 183 9 C215 37 243 56 282 76Z" fill="url(#leaf)"/>
+    <path d="M286 75 C236 78 196 99 162 131 C209 112 247 98 290 87Z" fill="url(#leaf)"/>
+    <path d="M300 79 C347 93 375 116 401 153 C363 128 335 109 297 91Z" fill="url(#leaf)"/>
+    <circle cx="289" cy="77" r="13" fill="#d58b2b"/>
+    <circle cx="305" cy="78" r="11" fill="#c97825"/>
+    <circle cx="297" cy="91" r="10" fill="#df9a31"/>
+  </svg>
 </div></section>
 
 <section class="cards">

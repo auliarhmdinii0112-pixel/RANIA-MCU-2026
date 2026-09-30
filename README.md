@@ -1,24 +1,20 @@
-# RANIA MCU 2026 v0.5
+# RANIA MCU 2026 v0.6
 
-UI enhancement over v0.4 without removing the existing Excel/attendance logic.
+Standalone GitHub Pages prototype for RANIA — Real-time Attendance & MCU Intelligence Analytics.
 
-Visual:
-- White + green corporate dashboard
-- Horizontal/wide dashboard layout
-- RANIA logo asset
-- Astra Agro Lestari logo in sidebar
-- Palm-oil plantation banner
-- Hero-style MCU Control Tower
-- Export Excel button visible in dashboard and participant section
+## Upload
+Upload **index.html** to the root of the GitHub repository and replace the old index.html.
 
-Logic retained:
-- 1,379 master participants from AMR + SIP
-- Excel import
-- Attendance status
-- Timestamp
-- Afdeling / Company / Status filters
-- Search
-- Hourly MCU
-- Data quality
+This v0.6 is intentionally self-contained: the RANIA mark and palm dashboard artwork are inline, so the dashboard does not depend on an `assets/` folder.
+
+## Preserved functionality
+- Excel import (AMR/SIP, confirmation YA)
+- 1,379 participant prototype dataset
+- Attendance status workflow
+- Automatic timestamps
+- KPI dashboard
+- Hourly MCU chart
+- Company/Afdeling monitoring
+- Data quality checks
 - Excel export
-- localStorage prototype
+- localStorage persistence
