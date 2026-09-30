@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v2.1 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v2.6 • Daily Control Tower + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -108,6 +108,8 @@ const $=id=>document.getElementById(id);
 const today=new Date().toISOString().slice(0,10);
 $('date').value=today;
 $('viewMode').value='date';
+function getControlDate(){const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();return dates.find(d=>d>=today)||dates[dates.length-1]||today;}
+function setDailyControlDate(){if(master.length){$('date').value=getControlDate();}else{$('date').value=today;} $('viewMode').value='date';}
 
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('master'))d.createObjectStore('master',{keyPath:'nik'});if(!d.objectStoreNames.contains('attendance'))d.createObjectStore('attendance',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function localLoad(){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(['master','attendance'],'readonly');const a=[];const b=[];tx.objectStore('master').openCursor().onsuccess=e=>{const c=e.target.result;if(c){a.push(c.value);c.continue()}};tx.objectStore('attendance').openCursor().onsuccess=e=>{const c=e.target.result;if(c){b.push(c.value);c.continue()}};tx.oncomplete=()=>{master=a;attendance=Object.fromEntries(b.map(x=>[x.id,x]));res()};tx.onerror=()=>rej(tx.error)})}
@@ -171,7 +173,7 @@ async function saveAttendance(row,status,dateOverride){
     });
 }
 window.setStatus=(nik,status,dateOverride)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status,dateOverride||r.schedule||$('date').value)};
-window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render()};
+window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';setDailyControlDate();render()};
 function applyFilters(){ render(); }
 window.applyFilters=applyFilters;
 window.resetAllFilters=()=>{
@@ -179,7 +181,7 @@ window.resetAllFilters=()=>{
   $('filterAfd').value='';
   $('filterStatus').value='';
   $('viewMode').value='date';
-  $('date').value=new Date().toISOString().slice(0,10);
+  setDailyControlDate();
   render();
 };
 document.addEventListener('keydown',e=>{
@@ -439,6 +441,6 @@ window.exportHistory=()=>{
   }
 };
 
-(async()=>{await localLoad();const cfg=localStorage.getItem('RANIA_FIREBASE_CONFIG');if(cfg){try{await connectFirebase(JSON.parse(cfg))}catch(e){console.warn(e)}}render()})();
+(async()=>{await localLoad();setDailyControlDate();const cfg=localStorage.getItem('RANIA_FIREBASE_CONFIG');if(cfg){try{await connectFirebase(JSON.parse(cfg))}catch(e){console.warn(e)}}render()})();
 </script>
 </body></html>
