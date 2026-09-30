@@ -7,7 +7,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#07101c;--p:#0d1725;--l:#243246;--t:#f4f7fb;--m:#91a0b4;--a:#65d6b4;--b:#6ea8ff;--r:#ff6b78;--y:#f4c95d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px system-ui,Arial}.app{display:flex;min-height:100vh}.side{width:230px;position:fixed;height:100vh;padding:24px 15px;background:#08111e;border-right:1px solid var(--l)}.side h1{margin:0;font-size:30px;letter-spacing:2px}.side p{font-size:11px;color:var(--m);line-height:1.4}.nav button,.btn{border:1px solid var(--l);background:#0d1928;color:#dce6f2;padding:10px 13px;border-radius:9px;cursor:pointer}.nav button{width:100%;border:0;background:transparent;text-align:left;margin:4px 0;color:var(--m)}.nav button:hover{background:#122033;color:white}.main{margin-left:230px;width:calc(100% - 230px);padding:28px}.top{display:flex;justify-content:space-between;margin-bottom:20px}.top h2{margin:0}.muted{color:var(--m);font-size:11px}.controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.primary{background:#12372f}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.card{background:var(--p);border:1px solid var(--l);border-radius:15px;padding:17px}.label{font-size:11px;color:var(--m)}.num{font-size:27px;font-weight:700;margin-top:7px}.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.barbox{height:180px;display:flex;align-items:end;gap:6px}.bc{flex:1;text-align:center;font-size:9px;color:var(--m)}.bar{background:var(--a);min-height:3px;border-radius:5px 5px 0 0}.row{display:flex;justify-content:space-between;padding:7px 0}.prog{height:8px;background:#1a2838;border-radius:9px;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b))}.search{width:100%;padding:10px;background:#0a1421;color:white;border:1px solid var(--l);border-radius:9px;margin:10px 0}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px 7px;border-bottom:1px solid #1d2a3b;text-align:left}th{font-size:10px;color:#718299}.badge{padding:4px 7px;border-radius:20px;font-size:9px;font-weight:700}.green{background:#12372f;color:#74e4c3}.yellow{background:#3b3219;color:#f6d66e}.red{background:#3b1d25;color:#ff8d98}.blue{background:#172b49;color:#8db8ff}.mini{font-size:9px;padding:4px 6px;background:#101d2d;color:white;border:1px solid var(--l);border-radius:6px;cursor:pointer}.footer{text-align:center;color:#526278;font-size:10px;padding:25px}@media(max-width:1000px){.cards{grid-template-columns:repeat(3,1fr)}.grid,.grid3{grid-template-columns:1fr}}@media(max-width:700px){.side{position:relative;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%;padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.top{display:block}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px system-ui,Arial}.app{display:flex;min-height:100vh}.side{width:230px;position:fixed;height:100vh;padding:24px 15px;background:#08111e;border-right:1px solid var(--l)}.side h1{margin:0;font-size:30px;letter-spacing:2px}.side p{font-size:11px;color:var(--m);line-height:1.4}.nav button,.btn{border:1px solid var(--l);background:#0d1928;color:#dce6f2;padding:10px 13px;border-radius:9px;cursor:pointer}.nav button{width:100%;border:0;background:transparent;text-align:left;margin:4px 0;color:var(--m)}.nav button:hover{background:#122033;color:white}.main{margin-left:230px;width:calc(100% - 230px);padding:28px}.top{display:flex;justify-content:space-between;margin-bottom:20px}.top h2{margin:0}.muted{color:var(--m);font-size:11px}.controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.primary{background:#12372f}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.card{background:var(--p);border:1px solid var(--l);border-radius:15px;padding:17px}.label{font-size:11px;color:var(--m)}.num{font-size:27px;font-weight:700;margin-top:7px}.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.barbox{height:180px;display:flex;align-items:end;gap:6px}.bc{flex:1;text-align:center;font-size:9px;color:var(--m)}.bar{background:var(--a);min-height:3px;border-radius:5px 5px 0 0}.row{display:flex;justify-content:space-between;padding:7px 0}.prog{height:8px;background:#1a2838;border-radius:9px;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b))}.search{width:100%;padding:10px;background:#0a1421;color:white;border:1px solid var(--l);border-radius:9px;margin:10px 0}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px 7px;border-bottom:1px solid #1d2a3b;text-align:left}th{font-size:10px;color:#718299}.badge{padding:4px 7px;border-radius:20px;font-size:9px;font-weight:700}.green{background:#12372f;color:#74e4c3}.yellow{background:#3b3219;color:#f6d66e}.red{background:#3b1d25;color:#ff8d98}.blue{background:#172b49;color:#8db8ff}.mini{font-size:9px;padding:4px 6px;background:#101d2d;color:white;border:1px solid var(--l);border-radius:6px;cursor:pointer}.footer{text-align:center;color:#526278;font-size:10px;padding:25px}@media(max-width:1000px){.cards{grid-template-columns:repeat(3,1fr)}.grid,.grid3{grid-template-columns:1fr}}@media(max-width:700px){.main div[style*="grid-template-columns:2fr 1fr 1fr 1fr"]{grid-template-columns:1fr!important}.side{position:relative;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%;padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.top{display:block}}
 </style>
 </head>
 <body>
@@ -36,8 +36,14 @@
 </section>
 
 <section class="card" id="participants" style="margin-top:14px">
-<h3>Participant Control</h3><div class="muted">Cari peserta dan ubah status. Timestamp tersimpan otomatis di browser.</div>
-<input class="search" id="search" placeholder="Cari NIK / nama / AFD / company..." oninput="render()">
+<h3>Participant Control</h3><div id="afdInsight" class="card" style="margin:12px 0;background:#0a1421"></div><div class="muted">Pilih <b>Afdeling</b> untuk melihat siapa yang sudah MCU, sedang proses, belum hadir, atau tidak hadir. Filter dapat digabung dengan Company dan Status.</div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px">
+<input class="search" id="search" placeholder="Cari NIK / nama..." oninput="render()">
+<select class="search" id="afdFilter" onchange="render()"><option value="">Semua Afdeling</option></select>
+<select class="search" id="companyFilter" onchange="render()"><option value="">Semua Company</option></select>
+<select class="search" id="statusFilter" onchange="render()"><option value="">Semua Status</option><option>MCU SELESAI</option><option>HADIR / PROSES</option><option>BELUM HADIR</option><option>TIDAK HADIR</option></select><button class="btn" onclick="clearFilters()">Reset Filter</button>
+</div>
+<div id="filterSummary" class="muted" style="margin:4px 0 10px"></div>
 <div style="overflow:auto"><table><thead><tr><th>NIK</th><th>Nama</th><th>Company</th><th>AFD</th><th>Paket</th><th>Status</th><th>Update</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
 <div class="footer">RANIA v0.2 • Functional prototype • Excel import + local transaction logic • Firebase belum terhubung</div>
@@ -59,17 +65,83 @@ function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function norm(v){return String(v??"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"")}
 function pick(o,keys){let ks=Object.keys(o);for(let k of keys){let f=ks.find(x=>norm(x)===norm(k)||norm(x).includes(norm(k)));if(f&&String(o[f]).trim()!=="")return o[f]}return""}
 function getStatus(v){let s=norm(v);if(s.includes("tidak")||s==="no")return"TIDAK HADIR";if(s.includes("selesai")||s.includes("done"))return"MCU SELESAI";if(s.includes("hadir"))return"HADIR / PROSES";return"BELUM HADIR"}
-function row(o,i,company){return{id:String(pick(o,["NIK","No NIK","Employee ID","NPK"])||company+"-"+String(i+1).padStart(4,"0")),name:String(pick(o,["Nama","Nama Karyawan","Employee Name"])||"Tanpa Nama"),company:company||String(pick(o,["Company","Perusahaan","PT"])||"-"),afd:String(pick(o,["AFD","Afdeling","Divisi","Division"])||"-"),pkg:String(pick(o,["Paket MCU","MCU Package","Package","Paket"])||"-"),schedule:String(pick(o,["Jadwal","Tanggal MCU","Tanggal","Schedule"])||""),status:getStatus(pick(o,["Konfirmasi","Confirmation","Status"])),updatedAt:null}}
+function row(o,i,company){return{id:String(pick(o,["NIK","No NIK","Employee ID","NPK"])||company+"-"+String(i+1).padStart(4,"0")),name:String(pick(o,["Nama","NAMA","Nama Karyawan","Nama Lengkap","Nama Pekerja","Nama Pegawai","Employee Name","Employee Name/Name","Name"])||"Tanpa Nama"),company:company||String(pick(o,["Company","Perusahaan","PT"])||"-"),afd:String(pick(o,["AFD","Afdeling","AFDELING","Kode AFD","Kode Afdeling","Divisi","Division","Department"])||"-"),pkg:String(pick(o,["Paket MCU","MCU Package","Package","Paket"])||"-"),schedule:String(pick(o,["Jadwal","Tanggal MCU","Tanggal","Schedule"])||""),status:getStatus(pick(o,["Konfirmasi","Confirmation","Status"])),updatedAt:null}}
 document.getElementById("file").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let wb=XLSX.read(await f.arrayBuffer()),out=[];for(let s of ["AMR","SIP"]){if(wb.Sheets[s])out.push(...XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:""}).map((r,i)=>row(r,i,s)))}if(!out.length){let s=wb.SheetNames.find(x=>x!=="Jadwal")||wb.SheetNames[0];out=XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:""}).map((r,i)=>row(r,i,""))}data=out;save();render();alert("Import berhasil: "+data.length.toLocaleString("id-ID")+" peserta")}catch(err){alert("Gagal membaca Excel: "+err.message)}e.target.value=""};
 function setStatus(id,s){let p=data.find(x=>x.id===id);if(!p)return;p.status=s;p.updatedAt=new Date().toISOString();save();render()}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function badge(s){let c=s==="MCU SELESAI"?"green":s==="TIDAK HADIR"?"red":s==="HADIR / PROSES"?"blue":"yellow";return'<span class="badge '+c+'">'+esc(s)+"</span>"}
 function group(id,arr){let c={};arr.forEach(x=>c[x||"-"]=(c[x||"-"]||0)+1);document.getElementById(id).innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>'<div class="row"><span>'+esc(k)+'</span><b>'+v+"</b></div><div class=\"prog\"><i style=\"width:"+Math.round(v/data.length*100)+"%\"></i></div>").join("")}
-function render(){let q=(document.getElementById("search").value||"").toLowerCase(),shown=data.filter(p=>(p.id+" "+p.name+" "+p.company+" "+p.afd).toLowerCase().includes(q)),total=data.length,done=data.filter(p=>p.status==="MCU SELESAI").length,pct=total?done/total*100:0;document.getElementById("total").textContent=total.toLocaleString("id-ID");document.getElementById("scheduled").textContent=data.filter(p=>p.schedule).length.toLocaleString("id-ID");document.getElementById("done").textContent=done.toLocaleString("id-ID");document.getElementById("pending").textContent=(total-done).toLocaleString("id-ID");document.getElementById("pct").textContent=pct.toFixed(1)+"%";document.getElementById("pctbar").style.width=pct+"%";
-let sc={};data.forEach(p=>sc[p.status]=(sc[p.status]||0)+1);document.getElementById("status").innerHTML=["MCU SELESAI","HADIR / PROSES","BELUM HADIR","TIDAK HADIR"].map(s=>'<div class="row"><span>'+s+'</span><b>'+(sc[s]||0)+"</b></div><div class=\"prog\"><i style=\"width:"+(total?sc[s]/total*100:0)+"%\"></i></div>").join("");
-group("company",data.map(p=>p.company));group("package",data.map(p=>p.pkg));let missing=data.filter(p=>!p.id||!p.name||!p.company||!p.afd).length,ids=data.map(p=>p.id),dup=ids.length-new Set(ids).size;document.getElementById("quality").innerHTML='<div class="row"><span>Data lengkap</span><b>'+ (total-missing)+'</b></div><div class="row"><span>Field kosong</span><b>'+missing+'</b></div><div class="row"><span>NIK duplikat</span><b>'+dup+'</b></div>';
-let h=Array(12).fill(0);data.filter(p=>p.status==="MCU SELESAI"&&p.updatedAt).forEach(p=>{let x=new Date(p.updatedAt).getHours();if(x>=7&&x<19)h[x-7]++});let mx=Math.max(1,...h);document.getElementById("chart").innerHTML=h.map((n,i)=>'<div class="bc"><b>'+n+'</b><div class="bar" style="height:'+Math.max(4,n/mx*140)+'px"></div>'+String(i+7).padStart(2,"0")+":00</div>").join("");
-document.getElementById("rows").innerHTML=shown.slice(0,300).map(p=>'<tr><td>'+esc(p.id)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.company)+'</td><td>'+esc(p.afd)+'</td><td>'+esc(p.pkg)+'</td><td>'+badge(p.status)+'</td><td>'+(p.updatedAt?new Date(p.updatedAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}):"—")+'</td><td><button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'MCU SELESAI\')">Selesai</button> <button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'HADIR / PROSES\')">Hadir</button> <button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'TIDAK HADIR\')">Absen</button></td></tr>').join("")}
+function render(){
+let q=(document.getElementById("search").value||"").toLowerCase();
+let af=(document.getElementById("afdFilter").value||"");
+let co=(document.getElementById("companyFilter").value||"");
+let st=(document.getElementById("statusFilter").value||"");
+
+const afds=[...new Set(data.map(p=>p.afd).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+const companies=[...new Set(data.map(p=>p.company).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+const afdSel=document.getElementById("afdFilter"), coSel=document.getElementById("companyFilter");
+const keepA=afdSel.value, keepC=coSel.value;
+afdSel.innerHTML='<option value="">Semua Afdeling</option>'+afds.map(x=>'<option>'+esc(x)+'</option>').join('');
+coSel.innerHTML='<option value="">Semua Company</option>'+companies.map(x=>'<option>'+esc(x)+'</option>').join('');
+afdSel.value=afds.includes(keepA)?keepA:""; coSel.value=companies.includes(keepC)?keepC:"";
+af=afdSel.value; co=coSel.value;
+
+let shown=data.filter(p=>
+(!q||(p.id+" "+p.name).toLowerCase().includes(q)) &&
+(!af||p.afd===af) && (!co||p.company===co) && (!st||p.status===st)
+);
+
+let total=data.length, done=data.filter(p=>p.status==="MCU SELESAI").length;
+let selected=shown.length, selectedDone=shown.filter(p=>p.status==="MCU SELESAI").length;
+let pct=total?done/total*100:0;
+
+document.getElementById("total").textContent=total.toLocaleString("id-ID");
+document.getElementById("scheduled").textContent=data.filter(p=>p.schedule).length.toLocaleString("id-ID");
+document.getElementById("done").textContent=done.toLocaleString("id-ID");
+document.getElementById("pending").textContent=(total-done).toLocaleString("id-ID");
+document.getElementById("pct").textContent=pct.toFixed(1)+"%";
+document.getElementById("pctbar").style.width=pct+"%";
+
+let sc={}; data.forEach(p=>sc[p.status]=(sc[p.status]||0)+1);
+document.getElementById("status").innerHTML=["MCU SELESAI","HADIR / PROSES","BELUM HADIR","TIDAK HADIR"].map(s=>
+'<div class="row"><span>'+s+'</span><b>'+(sc[s]||0)+'</b></div><div class="prog"><i style="width:"+(total?sc[s]/total*100:0)+"%"></i></div>"
+).join("");
+
+group("company",data.map(p=>p.company)); group("package",data.map(p=>p.pkg));
+
+let missing=data.filter(p=>!p.id||!p.name||!p.company||!p.afd).length;
+let ids=data.map(p=>p.id),dup=ids.length-new Set(ids).size;
+document.getElementById("quality").innerHTML=
+'<div class="row"><span>Data lengkap</span><b>'+(total-missing)+'</b></div>'+
+'<div class="row"><span>Field kosong</span><b>'+missing+'</b></div>'+
+'<div class="row"><span>NIK duplikat</span><b>'+dup+'</b></div>';
+
+let h=Array(12).fill(0);
+data.filter(p=>p.status==="MCU SELESAI"&&p.updatedAt).forEach(p=>{
+let x=new Date(p.updatedAt).getHours(); if(x>=7&&x<19)h[x-7]++;
+});
+let mx=Math.max(1,...h);
+document.getElementById("chart").innerHTML=h.map((n,i)=>
+'<div class="bc"><b>'+n+'</b><div class="bar" style="height:'+Math.max(4,n/mx*140)+'px"></div>'+String(i+7).padStart(2,"0")+":00</div>"
+).join("");
+
+document.getElementById("afdInsight").innerHTML=
+af ? '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>'+esc(af)+'</b><span>Peserta: '+selected+'</span><span>Selesai: '+selectedDone+'</span><span>Belum selesai: '+(selected-selectedDone)+'</span><span>Progress: '+(selected?selected?selectedDone/selected*100:0:0).toFixed(1)+'%</span></div><div class="prog" style="margin-top:8px"><i style="width:'+(selected?selected?selectedDone/selected*100:0:0)+'%"></i></div>' :
+'<div><b>Ringkasan Afdeling</b><span class="muted"> — pilih Afdeling untuk melihat kontrol kehadiran per afdeling.</span></div>';
+document.getElementById("filterSummary").textContent=
+(af||co||st?q?`Menampilkan ${selected.toLocaleString("id-ID")} peserta yang cocok`:
+`Filter aktif: ${selected.toLocaleString("id-ID")} peserta • ${selectedDone.toLocaleString("id-ID")} selesai • ${selected-selectedDone} belum selesai`:
+`Menampilkan ${selected.toLocaleString("id-ID")} peserta`);
+
+document.getElementById("rows").innerHTML=shown.slice(0,300).map(p=>
+'<tr><td>'+esc(p.id)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.company)+'</td><td>'+esc(p.afd)+'</td><td>'+esc(p.pkg)+'</td><td>'+badge(p.status)+'</td><td>'+
+(p.updatedAt?new Date(p.updatedAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}):"—")+
+'</td><td><button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'MCU SELESAI\')">Selesai</button> '+
+'<button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'HADIR / PROSES\')">Hadir</button> '+
+'<button class="mini" onclick="setStatus(\''+esc(p.id)+'\',\'TIDAK HADIR\')">Absen</button></td></tr>'
+).join("")||'<tr><td colspan="8">Tidak ada peserta sesuai filter.</td></tr>';
+}
+function clearFilters(){document.getElementById("search").value="";document.getElementById("afdFilter").value="";document.getElementById("companyFilter").value="";document.getElementById("statusFilter").value="";render()}
 function resetDemo(){if(confirm("Reset ke data demo?")){data=structuredClone(demo);save();render()}}
 function exportXLSX(){let ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"RANIA");XLSX.writeFile(wb,"RANIA-MCU-2026-export.xlsx")}
 function tick(){document.getElementById("clock").textContent="Last refresh: "+new Date().toLocaleTimeString("id-ID")}setInterval(tick,1000);tick();render();
