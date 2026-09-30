@@ -21,7 +21,7 @@ main{max-width:1500px;margin:22px auto;padding:0 18px}.toolbar,.panel,.kpi{backg
 .monitor-table th{color:var(--muted);font-weight:700}
 .monitor-table td:not(:first-child),.monitor-table th:not(:first-child){text-align:right}
 .monitor-mini-bar{height:7px;background:#e8f0eb;border-radius:99px;overflow:hidden;margin-top:4px}
-.monitor-mini-bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+.monitor-mini-bar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .15s ease}
 @media(max-width:850px){.monitoring-grid{grid-template-columns:1fr}}
 .panel{padding:16px}.panel h2{font-size:15px;margin:0 0 12px}.search{display:flex;gap:8px;margin-bottom:10px}.search input{width:100%}
 table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1px solid #edf2ee;text-align:left;font-size:12px}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.status{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;display:inline-block}.s0{background:#eef2f0;color:#61716a}.s1{background:#fff0d8;color:#9a6500}.s2{background:#e6f7ed;color:#08763a}.s3{background:#fde8e8;color:#ad2929}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{height:30px;padding:0 8px;border-radius:8px;font-size:11px;border:1px solid var(--line);background:#fff}.actions .done{background:#e6f7ed;color:#08763a;border-color:#bfe6ce}
@@ -141,10 +141,19 @@ async function saveAttendance(row,status,dateOverride){
     }
     if(status==='TIDAK HADIR')item.absentAt=old.absentAt||now;
   }
+  // Optimistic UI: update dashboard immediately, then persist in background.
   attendance[id]=item;
-  await localPut('attendance',item);
-  if(fs)await setDoc(doc(fs,'attendance',id),item,{merge:true});
   render();
+
+  // Persistence is intentionally non-blocking so Hadir/Selesai/Tidak Hadir
+  // appears instantly on the dashboard without waiting for IndexedDB/Firestore.
+  Promise.resolve().then(()=>localPut('attendance',item))
+    .then(()=>fs ? setDoc(doc(fs,'attendance',id),item,{merge:true}) : null)
+    .catch(err=>{
+      console.error('Gagal menyimpan transaksi MCU:',err);
+      const sync=$('sync');
+      if(sync){sync.textContent='● GAGAL SYNC';sync.classList.add('off');}
+    });
 }
 window.setStatus=(nik,status,dateOverride)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status,dateOverride||$('date').value)};
 window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render()};
