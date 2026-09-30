@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <main>
 <div class="toolbar">
   <div><label>Tanggal MCU</label><br><input id="date" type="date" onchange="render()"></div>
-  <div><label>Status</label><br><select id="filterStatus" onchange="render()"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
+  <div><label>Mode Data</label><br><select id="viewMode" onchange="render()"><option value="master">Semua Master</option><option value="date">MCU per Tanggal</option></select></div><div><label>Status</label><br><select id="filterStatus" onchange="render()"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
   <div style="flex:1"></div>
   <button onclick="document.getElementById('file').click()">📥 Import Master Excel</button>
   <input id="file" type="file" accept=".xlsx,.xls" hidden onchange="importExcel(event)">
@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 </div>
 
 <div class="kpis">
-  <div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Peserta terjadwal</div></div>
+  <div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Peserta terjadwal / master sesuai tanggal</div></div>
   <div class="kpi"><div class="n" id="kHad">0</div><div class="l">Hadir / proses</div></div>
   <div class="kpi"><div class="n" id="kDone">0</div><div class="l">MCU selesai</div></div>
   <div class="kpi"><div class="n" id="kAbsent">0</div><div class="l">Tidak hadir</div></div>
@@ -48,7 +48,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 
 <div class="grid">
 <section class="panel">
-  <h2>Operator MCU — <span id="dateLabel"></span></h2>
+  <h2 id="operatorTitle">Operator MCU — <span id="dateLabel"></span></h2>
   <div class="search"><input id="search" placeholder="Cari NIK / nama / AFD / perusahaan..." oninput="renderTable()"><button onclick="resetSearch()">Reset</button></div>
   <div style="overflow:auto"><table><thead><tr><th>NIK</th><th>Nama</th><th>AFD</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
@@ -114,12 +114,53 @@ async function saveAttendance(row,status){
 }
 window.setStatus=(nik,status)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status)};
 window.resetSearch=()=>{$('search').value='';renderTable()};
-window.render=()=>{const d=$('date').value; $('dateLabel').textContent=new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});const list=master.filter(x=>x.schedule===d);let had=0,done=0,abs=0;list.forEach(x=>{const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';if(s==='HADIR / PROSES')had++;if(s==='MCU SELESAI')done++;if(s==='TIDAK HADIR')abs++});$('kTotal').textContent=list.length;$('kHad').textContent=had;$('kDone').textContent=done;$('kAbsent').textContent=abs;$('kProgress').textContent=(list.length?Math.round(done/list.length*100):0)+'%';renderTable();renderHistory();renderHourly()};
-window.renderTable=()=>{const d=$('date').value,q=$('search').value.toLowerCase(),f=$('filterStatus').value;const list=master.filter(x=>x.schedule===d).filter(x=>{const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';return(!f||s===f)&&(!q||[x.nik,x.name,x.afd,x.company].join(' ').toLowerCase().includes(q))});$('rows').innerHTML=list.slice(0,250).map(x=>{const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';const cls=s==='MCU SELESAI'?'s2':s==='HADIR / PROSES'?'s1':s==='TIDAK HADIR'?'s3':'s0';return `<tr><td><b>${x.nik}</b></td><td>${x.name}</td><td>${x.afd}</td><td>${x.package||'-'}</td><td><span class="status ${cls}">${s}</span></td><td><div class="actions"><button onclick="setStatus('${x.nik}','HADIR / PROSES')">Hadir</button><button class="done" onclick="setStatus('${x.nik}','MCU SELESAI')">Selesai</button><button onclick="setStatus('${x.nik}','TIDAK HADIR')">Tidak Hadir</button><button onclick="setStatus('${x.nik}','BELUM HADIR')">Reset</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta pada filter ini.</td></tr>'};
+window.render=()=>{
+  const d=$('date').value;
+  const mode=$('viewMode')?.value||'date';
+  $('dateLabel').textContent=new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const list=master.filter(x=>x.schedule===d);
+  let had=0,done=0,abs=0;
+  list.forEach(x=>{const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';if(s==='HADIR / PROSES')had++;if(s==='MCU SELESAI')done++;if(s==='TIDAK HADIR')abs++});
+  $('kTotal').textContent=mode==='master'?master.length:list.length;
+  $('kHad').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='HADIR / PROSES').length:had;
+  $('kDone').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='MCU SELESAI').length:done;
+  $('kAbsent').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='TIDAK HADIR').length:abs;
+  $('kProgress').textContent=(mode==='master'?master.length:(list.length||0))?(mode==='master'?Math.round(Object.values(attendance).filter(x=>x.status==='MCU SELESAI').length/master.length*100):Math.round(done/list.length*100))+'%':'0%';
+  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+master.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+ $('dateLabel').textContent +'</span>';
+  renderTable();renderHistory();renderHourly()
+};
+
+window.renderTable=()=>{
+  const d=$('date').value,q=$('search').value.toLowerCase(),f=$('filterStatus').value,mode=$('viewMode')?.value||'date';
+  let list=mode==='master'?[...master]:master.filter(x=>x.schedule===d);
+  list=list.filter(x=>{
+    const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';
+    return(!f||s===f)&&(!q||[x.nik,x.name,x.afd,x.company,x.division,x.position,x.package,x.schedule].join(' ').toLowerCase().includes(q))
+  });
+  const limited=list.slice(0,500);
+  $('rows').innerHTML=limited.map(x=>{
+    const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';
+    const cls=s==='MCU SELESAI'?'s2':s==='HADIR / PROSES'?'s1':s==='TIDAK HADIR'?'s3':'s0';
+    const schedule=new Date(x.schedule+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    const actions=mode==='master'
+      ? `<span style="color:var(--muted);font-size:11px">Jadwal: ${schedule}</span>`
+      : `<div class="actions"><button onclick="setStatus('${x.nik}','HADIR / PROSES')">Hadir</button><button class="done" onclick="setStatus('${x.nik}','MCU SELESAI')">Selesai</button><button onclick="setStatus('${x.nik}','TIDAK HADIR')">Tidak Hadir</button><button onclick="setStatus('${x.nik}','BELUM HADIR')">Reset</button></div>`;
+    return `<tr><td><b>${x.nik}</b></td><td>${x.name}</td><td>${x.afd}</td><td>${x.package||'-'}</td><td><span class="status ${cls}">${mode==='master'?'MASTER':s}</span></td><td>${actions}</td></tr>`
+  }).join('')||'<tr><td colspan="6" class="empty">Master belum terisi. Tekan Import Master Excel.</td></tr>';
+};
+
 window.renderHistory=()=>{const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();$('history').innerHTML=dates.map(d=>{const list=master.filter(x=>x.schedule===d);const done=list.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;const pct=list.length?Math.round(done/list.length*100):0;return `<div class="day" onclick="document.getElementById('date').value='${d}';render()"><strong>${new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</strong><span>${done}/${list.length} selesai • ${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')||'<div class="empty">Import master Excel terlebih dahulu.</div>'};
 window.renderHourly=()=>{const d=$('date').value,arr=Array(24).fill(0);Object.values(attendance).forEach(x=>{if(x.scheduledDate===d&&x.status==='MCU SELESAI'&&x.completedAt){arr[new Date(x.completedAt).getHours()]++}});$('hourly').innerHTML=arr.map((n,h)=>n?`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><b style="width:42px">${String(h).padStart(2,'0')}:00</b><div class="bar" style="flex:1"><i style="width:${Math.min(100,n*10)}%"></i></div><b>${n}</b></div>`:'').join('')||'<div class="empty">Belum ada transaksi MCU selesai.</div>'};
 
-window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=r['Jadwal MCU']??r['Tanggal MCU']??'';if(dt instanceof Date)dt=dt.toISOString().slice(0,10);else if(dt)dt=new Date(dt).toISOString().slice(0,10);out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.`);render();ev.target.value=''};
+window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=r['Jadwal MCU']??r['Tanggal MCU']??'';if(dt instanceof Date)dt=dt.toISOString().slice(0,10);else if(dt){
+  if(typeof dt==='number'){
+    const epoch=new Date(Date.UTC(1899,11,30)+dt*86400000);
+    dt=epoch.toISOString().slice(0,10);
+  }else{
+    const parsed=new Date(dt);
+    if(!isNaN(parsed))dt=parsed.toISOString().slice(0,10);
+  }
+}out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='master';render();ev.target.value=''};
 
 window.exportHistory=()=>{const d=$('date').value;const rows=master.filter(x=>x.schedule===d).map(x=>{const a=attendance[x.nik+'_'+d]||{};return{Tanggal_MCU:d,NIK:x.nik,Nama:x.name,Perusahaan:x.company,AFD:x.afd,Divisi:x.division,Jabatan:x.position,Paket:x.package,Status:a.status||'BELUM HADIR',CheckIn:a.checkInAt||'',MCU_Selesai:a.completedAt||'',UpdatedAt:a.updatedAt||''}});const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'History MCU');XLSX.writeFile(wb,`RANIA_MCU_${d}.xlsx`)};
 
