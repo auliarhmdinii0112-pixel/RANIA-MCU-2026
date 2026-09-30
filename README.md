@@ -1,17 +1,23 @@
-# RANIA MCU 2026 v0.9
+# RANIA MCU 2026 v1.0
 
-Prototype RANIA MCU Control Tower.
+Real-time Attendance & MCU Intelligence Analytics.
 
-## v0.9 persistence fix
-- Master MCU is persisted synchronously to `localStorage` before the UI reports success.
-- IndexedDB is retained as a secondary backup.
-- On reload, localStorage is read first to avoid mobile async-storage race conditions.
-- Master remains locked; attendance/status is stored separately.
-- Reset only changes attendance status back to BELUM HADIR.
-- Excel import is awaited through completion before success is shown.
+## Data model
+- `employees/{nik}` = immutable master MCU.
+- `attendance/{nik}_{tanggal}` = historical MCU transaction per scheduled date.
+- Browser IndexedDB is used only as local cache/fallback.
+- Firebase Firestore becomes the cloud source of truth after Firebase configuration is supplied.
 
-## GitHub Pages
-Upload/replace only `index.html` in the repository.
-Do not upload the real MCU Excel file to a public repository.
+## Run
+Open `index.html` or deploy it to GitHub Pages.
 
-This is still a single-device prototype. Firebase/Firestore should be the production persistence layer before multi-device/multi-operator use.
+## Firebase
+1. Create a Firebase project.
+2. Enable Firestore Database.
+3. Enable Authentication > Anonymous for this prototype.
+4. Copy the Web App config into RANIA > Firebase.
+5. For production, replace Anonymous Auth with a dedicated operator login and deploy Firestore Security Rules.
+
+## Important
+Do not put service-account private keys in this HTML or a public GitHub repository.
+Do not commit the employee Excel file or real employee data to a public repository.
