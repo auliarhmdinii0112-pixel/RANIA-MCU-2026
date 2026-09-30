@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v1.7 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v1.9 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -141,12 +141,13 @@ async function saveAttendance(row,status,dateOverride){
     }
     if(status==='TIDAK HADIR')item.absentAt=old.absentAt||now;
   }
-  // Optimistic UI: update dashboard immediately, then persist in background.
+  // Update in-memory state first so the dashboard reacts immediately.
   attendance[id]=item;
-  render();
+  renderFastDashboard();
+  // Render the heavy participant table on the next paint, so KPI/AFD/jam can update first.
+  requestAnimationFrame(()=>renderTable());
 
-  // Persistence is intentionally non-blocking so Hadir/Selesai/Tidak Hadir
-  // appears instantly on the dashboard without waiting for IndexedDB/Firestore.
+  // Persist without blocking the UI.
   Promise.resolve().then(()=>localPut('attendance',item))
     .then(()=>fs ? setDoc(doc(fs,'attendance',id),item,{merge:true}) : null)
     .catch(err=>{
@@ -179,6 +180,30 @@ function populateAfdFilter(){
   sel.innerHTML='<option value="">Semua AFD</option>'+afds.map(a=>`<option value="${a.replace(/"/g,'&quot;')}">${a}</option>`).join('');
   if(afds.includes(current))sel.value=current;
 }
+
+window.renderFastDashboard=()=>{
+  const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'';
+  let dateList=master.filter(x=>x.schedule===d);
+  if(afd)dateList=dateList.filter(x=>(x.afd||'').trim()===afd);
+  const masterFiltered=afd?master.filter(x=>(x.afd||'').trim()===afd):master;
+  const targetList=mode==='date'?dateList:masterFiltered;
+  const targetAtt=targetList.map(x=>attendance[x.nik+'_'+x.schedule]).filter(Boolean);
+  const had=targetAtt.filter(x=>x.status==='HADIR / PROSES').length;
+  const done=targetAtt.filter(x=>x.status==='MCU SELESAI').length;
+  const abs=targetAtt.filter(x=>x.status==='TIDAK HADIR').length;
+  const present=had+done,denom=targetList.length||0;
+  $('kTotal').textContent=denom;
+  $('kHad').textContent=had;
+  $('kDone').textContent=done;
+  $('kAbsent').textContent=abs;
+  $('kProgress').textContent=(denom?Math.round(done/denom*100):0)+'%';
+  document.querySelector('#kTotal').parentElement.querySelector('.l').textContent=mode==='master'?'Peserta master terfilter':'Peserta terjadwal';
+  const attendancePct=denom?Math.round(present/denom*100):0;
+  $('attendanceSummary').innerHTML=`<span class="sync">Kehadiran ${attendancePct}%</span><span class="status s1">Hadir/proses ${had}</span><span class="status s2">Selesai ${done}</span><span class="status s3">Tidak hadir ${abs}</span>`;
+  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+masterFiltered.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+$('dateLabel').textContent+'</span>';
+  renderAfdMonitoring();
+  renderHourly();
+};
 
 window.render=()=>{
   populateAfdFilter();
