@@ -41,7 +41,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <main>
 <div class="toolbar">
   <div><label>Tanggal MCU</label><br><input id="date" type="date"></div>
-  <div><label>Mode Data</label><br><select id="viewMode"><option value="master">Semua Master</option><option value="date">MCU per Tanggal</option></select></div><div><label>AFD</label><br><select id="filterAfd"><option value="">Semua AFD</option></select></div><div><label>Status</label><br><select id="filterStatus"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
+  <div><label>Mode Data</label><br><select id="viewMode"><option value="date">MCU per Tanggal</option><option value="master">Semua Master</option></select></div><div><label>AFD</label><br><select id="filterAfd"><option value="">Semua AFD</option></select></div><div><label>Status</label><br><select id="filterStatus"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
   <div style="flex:1"></div>
   <button class="primary" onclick="applyFilters()">🔎 Terapkan Filter</button><button onclick="resetAllFilters()">↺ Reset Filter</button><button onclick="document.getElementById('file').click()">📥 Import Master Excel</button>
   <input id="file" type="file" accept=".xlsx,.xls" hidden onchange="importExcel(event)">
@@ -107,6 +107,7 @@ let master=[], attendance={}, fb=null, fs=null, auth=null, unsub=null;
 const $=id=>document.getElementById(id);
 const today=new Date().toISOString().slice(0,10);
 $('date').value=today;
+$('viewMode').value='date';
 
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('master'))d.createObjectStore('master',{keyPath:'nik'});if(!d.objectStoreNames.contains('attendance'))d.createObjectStore('attendance',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function localLoad(){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(['master','attendance'],'readonly');const a=[];const b=[];tx.objectStore('master').openCursor().onsuccess=e=>{const c=e.target.result;if(c){a.push(c.value);c.continue()}};tx.objectStore('attendance').openCursor().onsuccess=e=>{const c=e.target.result;if(c){b.push(c.value);c.continue()}};tx.oncomplete=()=>{master=a;attendance=Object.fromEntries(b.map(x=>[x.id,x]));res()};tx.onerror=()=>rej(tx.error)})}
@@ -177,7 +178,7 @@ window.resetAllFilters=()=>{
   $('search').value='';
   $('filterAfd').value='';
   $('filterStatus').value='';
-  $('viewMode').value='master';
+  $('viewMode').value='date';
   $('date').value=new Date().toISOString().slice(0,10);
   render();
 };
@@ -388,7 +389,7 @@ window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;cons
     const parsed=new Date(dt);
     if(!isNaN(parsed))dt=parsed.toISOString().slice(0,10);
   }
-}out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='master';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render();ev.target.value=''};
+}out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='date';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render();ev.target.value=''};
 
 window.exportHistory=()=>{
   try{
