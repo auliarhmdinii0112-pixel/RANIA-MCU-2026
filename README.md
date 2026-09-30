@@ -1,21 +1,24 @@
-# RANIA MCU 2026 v0.4
+# RANIA MCU 2026 v0.5
 
-Light green corporate dashboard with functional Excel import based on the actual MCU workbook structure.
+UI enhancement over v0.4 without removing the existing Excel/attendance logic.
 
-Actual source sheets:
-- AMR
-- SIP
+Visual:
+- White + green corporate dashboard
+- Horizontal/wide dashboard layout
+- RANIA logo asset
+- Astra Agro Lestari logo in sidebar
+- Palm-oil plantation banner
+- Hero-style MCU Control Tower
+- Export Excel button visible in dashboard and participant section
 
-Actual fields mapped:
-Company Id, Emp No, Name, Position Title, AFD, Org Name/Divisi, Paket MCU, Konfirmasi data HRGA, Jadwal MCU, plus gender/age.
-
-Logic:
-- Only participants with HRGA confirmation YA are imported.
-- Initial attendance status = BELUM HADIR.
-- Status can be changed to HADIR / PROSES, MCU SELESAI, or TIDAK HADIR.
-- Timestamp is automatic for attendance/progress actions.
-- KPI, Afdeling, Company, Status, search and hourly chart are calculated from the current data.
-- Excel export included.
-- localStorage used until Firebase is connected.
-
-Branding is a custom RANIA/Astra Agro Lestari-inspired presentation; official logo assets are not embedded as a replacement for corporate brand files.
+Logic retained:
+- 1,379 master participants from AMR + SIP
+- Excel import
+- Attendance status
+- Timestamp
+- Afdeling / Company / Status filters
+- Search
+- Hourly MCU
+- Data quality
+- Excel export
+- localStorage prototype

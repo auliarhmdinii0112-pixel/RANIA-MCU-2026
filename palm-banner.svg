@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dff7e9"/><stop offset="1" stop-color="#f7fff9"/></linearGradient><linearGradient id="hill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18834f"/><stop offset="1" stop-color="#76c992"/></linearGradient></defs>
+<rect width="1600" height="420" fill="url(#sky)"/>
+<path d="M0 260 Q300 180 600 250 T1200 235 T1600 245 V420 H0Z" fill="url(#hill)"/>
+<g fill="#0b7043" opacity=".95">
+<path d="M130 365l-8-105 14-100 15 100 50-55-34 82 78-23-72 49 62 30-77-19 28 60z"/>
+<path d="M360 390l-5-115 16-100 14 95 52-50-36 78 78-20-74 47 63 32-78-20 25 53z"/>
+<path d="M650 380l-6-110 16-100 15 95 53-50-38 80 79-23-75 50 65 29-80-18 27 47z"/>
+<path d="M950 390l-5-115 16-100 15 95 52-50-36 78 78-20-74 47 63 32-78-20 25 53z"/>
+<path d="M1240 380l-6-110 16-100 15 95 53-50-38 80 79-23-75 50 65 29-80-18 27 47z"/>
+<path d="M1480 390l-5-115 16-100 15 95 52-50-36 78 78-20-74 47 63 32-78-20 25 53z"/>
+</g>
+<path d="M0 350 Q400 300 800 355 T1600 345" fill="none" stroke="#d8f2df" stroke-width="6" opacity=".8"/>
+</svg>

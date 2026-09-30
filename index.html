@@ -13,17 +13,52 @@
 .cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}.label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.num{font-size:25px;font-weight:800;margin-top:7px}.sub{font-size:10px;color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:14px;margin-top:14px}.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}.prog{height:8px;background:#e9f0ec;border-radius:9px;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,#15965b,#55c78e);border-radius:9px}.donut{width:145px;height:145px;border-radius:50%;background:conic-gradient(var(--green) 0 46.6%,#3b82f6 46.6% 56.6%,#f2ad1d 56.6% 96.6%,#e34b4b 96.6% 100%);display:grid;place-items:center}.donut:after{content:"46.6%";width:92px;height:92px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}.donutwrap{display:flex;gap:20px;align-items:center}.row{display:flex;justify-content:space-between;gap:8px;padding:7px 0}.barbox{height:165px;display:flex;align-items:end;gap:7px}.bc{flex:1;text-align:center;font-size:9px;color:var(--muted)}.bar{background:#4fbd83;min-height:3px;border-radius:5px 5px 0 0}.toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1.5fr auto;gap:8px;margin:12px 0}.search,.select{width:100%;padding:10px;background:#fff;color:#25372f;border:1px solid #ccdcd4;border-radius:9px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}th,td{padding:10px 8px;border-bottom:1px solid #e6eeea;text-align:left}th{font-size:9px;color:#718078;text-transform:uppercase}td{color:#26362f}.badge{padding:5px 8px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}.green{background:#e1f5ea;color:#087044}.blue{background:#e7f0ff;color:#2563b8}.yellow{background:#fff3d7;color:#9a6900}.red{background:#ffe5e5;color:#b42323}.mini{font-size:9px;padding:5px 7px;background:#fff;color:#1f4937;border:1px solid #c9ddd3;border-radius:6px;cursor:pointer}.mini:hover{background:#edf8f2}.insight{background:#f3faf6;border:1px solid #d8eee2;border-radius:11px;padding:12px;margin-bottom:12px}.footer{text-align:center;color:#8a9992;font-size:10px;padding:25px}
 @media(max-width:1200px){.cards{grid-template-columns:repeat(3,1fr)}.grid,.grid2{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr 1fr}}@media(max-width:720px){.side{position:relative;width:100%;height:auto}.sidefoot{position:static;margin:18px 8px}.app{display:block}.main{margin:0;width:100%;padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.top{display:block}.signature{text-align:left;margin-top:10px}.toolbar{grid-template-columns:1fr}}
 </style>
+
+<style>
+body{background:#f3f8f5}
+.side{width:220px}
+.main{margin-left:220px;width:calc(100% - 220px);max-width:none;padding:20px 24px}
+.aal img{width:52px;height:52px;object-fit:contain}
+.brandrow{display:flex;align-items:center;gap:10px}
+.hero{position:relative;overflow:hidden;min-height:190px;border-radius:20px;margin-bottom:16px;background:#fff;border:1px solid #d7e8df;box-shadow:0 10px 30px rgba(24,96,59,.08)}
+.hero:before{content:"";position:absolute;inset:0;background:url('assets/palm-banner.svg') center bottom/cover no-repeat;opacity:.9}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.98) 0%,rgba(255,255,255,.88) 42%,rgba(255,255,255,.18) 100%)}
+.hero-content{position:relative;z-index:1;padding:27px 30px;max-width:700px}
+.hero-content h2{font-size:30px;margin:0;color:#103b2b}
+.hero-content p{font-size:13px;color:#5e7067;margin:8px 0}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:#e5f7ed;color:#087044;border-radius:30px;padding:7px 11px;font-size:10px;font-weight:800;margin-bottom:10px}
+.cards{grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px}
+.card{box-shadow:0 6px 20px rgba(22,82,52,.055)}
+.horizontal{display:grid;grid-template-columns:1.1fr 1.7fr 1fr;gap:12px;margin-top:12px}
+.kpi-accent{border-top:3px solid #15965b}
+.toolbar{grid-template-columns:1fr 1fr 1fr 2fr auto}
+.export{background:#eff9f3;color:#087044;border-color:#b9ddca;font-weight:700}
+@media(max-width:1200px){.cards{grid-template-columns:repeat(3,1fr)}.horizontal{grid-template-columns:1fr 1fr}.main{padding:16px}}
+@media(max-width:720px){.side{width:100%}.main{margin-left:0;width:100%}.horizontal{grid-template-columns:1fr}.hero-content h2{font-size:23px}.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
-<div class="aal"><div class="aalmark">AA</div><div><b>ASTRA<br>AGRO LESTARI</b><span>Plantation Management</span></div></div>
-<div class="rania"><div class="rmark">R</div><div><h1>RANIA</h1><p>Real-time Attendance & MCU Intelligence Analytics</p></div></div>
+<div class="aal">
+  <img src="https://companieslogo.com/img/orig/AALI.JK-0b7df4bf.png?download=true&t=1720244490" alt="Astra Agro Lestari">
+  <div><b>ASTRA AGRO LESTARI</b><span>Plantation Management</span></div>
+</div>
+<div class="rania">
+  <img src="assets/rania-logo.svg" alt="RANIA" style="width:46px;height:46px">
+  <div><h1>RANIA</h1><p>Real-time Attendance & MCU Intelligence Analytics</p></div>
+</div><div><h1>RANIA</h1><p>Real-time Attendance & MCU Intelligence Analytics</p></div></div>
 <nav class="nav"><button class="active" onclick="go('dashboard')">▦ &nbsp; Dashboard</button><button onclick="go('participants')">♙ &nbsp; Participants</button><button onclick="go('hours')">▥ &nbsp; Hourly MCU</button><button onclick="go('participants')">▤ &nbsp; Reports</button><button onclick="go('participants')">▱ &nbsp; Data Management</button></nav>
 <div class="sidefoot">Healthy People<br>Sustainable Plantation<br>Better Tomorrow</div>
 </aside>
 <main class="main">
-<section class="top"><div class="title"><h2>MCU Control Tower 2026</h2><p>Real-time monitoring peserta medical check-up</p><div class="controls"><button class="btn primary" onclick="document.getElementById('file').click()">＋ Import Master MCU</button><input id="file" type="file" accept=".xlsx,.xls,.csv" hidden><button class="btn" onclick="exportXLSX()">↓ Export</button><button class="btn" onclick="location.reload()">↻ Refresh</button></div></div><div class="signature">Designed & Powered by Aulia<br><span id="clock"></span></div></section>
+<section class="hero">
+<div class="hero-content">
+<div class="hero-badge">● LIVE MCU CONTROL TOWER 2026</div>
+<h2>Medical Check-Up Monitoring</h2>
+<p>Kontrol kehadiran peserta secara real-time, per Company, Afdeling, status, dan jam pelaksanaan.</p>
+<div class="controls"><button class="btn primary" onclick="document.getElementById('file').click()">＋ Import Master MCU</button><input id="file" type="file" accept=".xlsx,.xls,.csv" hidden><button class="btn export" onclick="exportXLSX()">↓ Export Data</button><button class="btn" onclick="location.reload()">↻ Refresh</button></div>
+</div></section>
 
 <section class="cards">
 <div class="card"><div class="label">Total Peserta</div><div class="num" id="total">0</div><div class="sub">Peserta mengikuti MCU</div></div>
@@ -34,7 +69,7 @@
 <div class="card"><div class="label">Tidak Hadir</div><div class="num" id="absent">0</div></div>
 </section>
 
-<section class="grid2">
+<section class="horizontal">
 <div class="card"><h3>Progress MCU</h3><div class="sub">Distribusi status peserta</div><div class="donutwrap"><div class="donut" id="donut"></div><div id="status"></div></div></div>
 <div class="card" id="hours"><h3>Realisasi MCU per Jam</h3><div class="sub">Otomatis dari timestamp status MCU Selesai</div><div class="barbox" id="chart"></div></div>
 </section>
@@ -46,9 +81,9 @@
 </section>
 
 <section class="card" id="participants" style="margin-top:14px"><h3>Daftar Peserta MCU</h3><div class="sub">Filter Afdeling → Company → Status untuk mengetahui siapa yang sudah hadir, proses, belum hadir, atau tidak hadir.</div>
-<div class="toolbar"><select class="select" id="afdFilter" onchange="render()"><option value="">Semua Afdeling</option></select><select class="select" id="companyFilter" onchange="render()"><option value="">Semua Company</option></select><select class="select" id="statusFilter" onchange="render()"><option value="">Semua Status</option><option>MCU SELESAI</option><option>HADIR / PROSES</option><option>BELUM HADIR</option><option>TIDAK HADIR</option></select><input class="search" id="search" placeholder="Cari NIK / nama..." oninput="render()"><button class="btn" onclick="clearFilters()">Reset</button></div>
+<div class="toolbar"><select class="select" id="afdFilter" onchange="render()"><option value="">Semua Afdeling</option></select><select class="select" id="companyFilter" onchange="render()"><option value="">Semua Company</option></select><select class="select" id="statusFilter" onchange="render()"><option value="">Semua Status</option><option>MCU SELESAI</option><option>HADIR / PROSES</option><option>BELUM HADIR</option><option>TIDAK HADIR</option></select><input class="search" id="search" placeholder="Cari NIK / nama..." oninput="render()"><button class="btn" onclick="clearFilters()">Reset</button><button class="btn export" onclick="exportXLSX()">↓ Export Excel</button></div>
 <div id="insight" class="insight"></div><div class="tablewrap"><table><thead><tr><th>NIK</th><th>Nama</th><th>Company</th><th>AFD</th><th>Divisi</th><th>Jabatan</th><th>Paket</th><th>Jadwal</th><th>Status</th><th>Update</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div></section>
-<div class="footer">RANIA v0.4 • Functional Prototype • Excel Import + Attendance Logic • Firebase belum terhubung</div>
+<div class="footer">RANIA v0.5 • Functional Prototype • Excel Import + Attendance Logic • Firebase belum terhubung</div>
 </main></div>
 
 <script>
