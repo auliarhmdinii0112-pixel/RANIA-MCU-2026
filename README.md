@@ -1,12 +1,13 @@
-# RANIA MCU 2026 v0.7
+# RANIA MCU 2026 v0.8
 
-Prototype RANIA dengan master peserta terkunci dan attendance/status dipisahkan.
+RANIA — Real-time Attendance & MCU Intelligence Analytics.
 
-- Master: read-only dari dashboard
-- Status: BELUM HADIR / HADIR-PROSES / MCU SELESAI / TIDAK HADIR
-- Salah input dapat di-Reset per peserta tanpa mengubah master
-- Refresh browser tidak menghapus status yang sudah tersimpan
-- Import Excel mengganti master dan mereset status attendance
-- Export Excel tetap tersedia
+v0.8 fixes master persistence after browser refresh:
+- Master MCU is stored in IndexedDB on the device.
+- localStorage remains as fallback.
+- Imported master survives refresh/reopen on the same browser/device.
+- Attendance status is stored separately from locked master data.
+- Reset only changes attendance status back to BELUM HADIR.
+- Excel import, filters, dashboard and export remain available.
 
-Untuk produksi, pindahkan master dan attendance ke Firebase Auth + Firestore. Security Rules dapat membatasi field master agar tidak dapat diubah client.
+Production architecture can later move the master and attendance data to Firebase Firestore.
