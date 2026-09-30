@@ -12,7 +12,18 @@ header{background:linear-gradient(120deg,#075a2d,#12a05a);color:#fff;padding:18p
 .top{max-width:1500px;margin:auto;display:flex;align-items:center;gap:16px}.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:14px;background:#fff;color:var(--green);display:grid;place-items:center;font-weight:900;font-size:19px;box-shadow:0 6px 16px #0002}.title h1{margin:0;font-size:21px}.title p{margin:2px 0 0;opacity:.85}.right{margin-left:auto;display:flex;gap:8px;align-items:center}
 main{max-width:1500px;margin:22px auto;padding:0 18px}.toolbar,.panel,.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px #16312608}.toolbar{padding:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar label{font-size:12px;color:var(--muted);font-weight:700}.toolbar input,.toolbar select,.toolbar button,.search input{height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 12px;color:var(--ink)}button{cursor:pointer;font-weight:750}.primary{background:var(--green);color:#fff;border-color:var(--green)!important}.ghost{background:#fff}.danger{color:var(--danger)}.sync{padding:8px 11px;border-radius:999px;background:#eaf7ef;color:var(--green);font-weight:800;font-size:12px}.sync.off{background:#fff3df;color:var(--amber)}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0}.kpi{padding:17px}.kpi .n{font-size:27px;font-weight:900}.kpi .l{color:var(--muted);font-size:12px;margin-top:3px}
-.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.panel{padding:16px}.panel h2{font-size:15px;margin:0 0 12px}.search{display:flex;gap:8px;margin-bottom:10px}.search input{width:100%}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+.monitoring-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin:10px 0 14px}
+.monitor-box{border:1px solid var(--line);border-radius:12px;background:#fbfefc;padding:12px}
+.monitor-box h3{margin:0 0 10px;font-size:13px}
+.monitor-table{width:100%;border-collapse:collapse;font-size:12px}
+.monitor-table th,.monitor-table td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+.monitor-table th{color:var(--muted);font-weight:700}
+.monitor-table td:not(:first-child),.monitor-table th:not(:first-child){text-align:right}
+.monitor-mini-bar{height:7px;background:#e8f0eb;border-radius:99px;overflow:hidden;margin-top:4px}
+.monitor-mini-bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+@media(max-width:850px){.monitoring-grid{grid-template-columns:1fr}}
+.panel{padding:16px}.panel h2{font-size:15px;margin:0 0 12px}.search{display:flex;gap:8px;margin-bottom:10px}.search input{width:100%}
 table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1px solid #edf2ee;text-align:left;font-size:12px}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.status{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;display:inline-block}.s0{background:#eef2f0;color:#61716a}.s1{background:#fff0d8;color:#9a6500}.s2{background:#e6f7ed;color:#08763a}.s3{background:#fde8e8;color:#ad2929}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{height:30px;padding:0 8px;border-radius:8px;font-size:11px;border:1px solid var(--line);background:#fff}.actions .done{background:#e6f7ed;color:#08763a;border-color:#bfe6ce}
 .history{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.day{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fbfdfb;cursor:pointer}.day strong{display:block}.day span{font-size:11px;color:var(--muted)}
 .bar{height:9px;background:#e8efeb;border-radius:99px;overflow:hidden;margin-top:7px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green2))}
@@ -54,18 +65,26 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <section class="panel">
   <h2 id="operatorTitle">Operator MCU — <span id="dateLabel"></span></h2>
   <div id="attendanceSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin:-3px 0 10px"></div>
+  <div class="monitoring-grid">
+    <div class="monitor-box">
+      <h3>Monitoring Per AFD</h3>
+      <div id="afdMonitoring"></div>
+    </div>
+    <div class="monitor-box">
+      <h3>Monitoring Per Jam</h3>
+      <div id="hourlyTop"></div>
+    </div>
+  </div>
+
   <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Klik <b>Hadir</b>, <b>Selesai</b>, <b>Tidak Hadir</b>, atau <b>Reset</b>. Pada mode Semua Master, transaksi otomatis masuk ke tanggal jadwal masing-masing.</div><div class="search"><input id="search" placeholder="Cari NIK / nama / AFD / perusahaan..." oninput="renderTable()"><button onclick="resetSearch()">Reset</button></div>
   <div style="overflow:auto"><table><thead><tr><th>NIK</th><th>Nama</th><th>AFD</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
 <section class="panel">
   <h2>Historical MCU per Tanggal</h2>
   <div id="history" class="history"></div>
-  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-  <h2>Monitoring Per Jam</h2>
-  <div id="hourly"></div>
 </section>
 </div>
-<div class="footer">RANIA v1.0 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v1.6 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -187,7 +206,7 @@ window.render=()=>{
      <span class="status s2">Selesai ${done}</span>
      <span class="status s3">Tidak hadir ${abs}</span>`;
 
-  renderTable();renderHistory();renderHourly();
+  renderTable();renderHistory();renderAfdMonitoring();renderHourly();
 };
 
 window.renderTable=()=>{
@@ -242,6 +261,35 @@ window.renderHistory=()=>{
   }).join('')||'<div class="empty">Belum ada jadwal MCU.</div>';
 };
 
+
+window.renderAfdMonitoring=()=>{
+  const d=$('date').value, afdFilter=$('filterAfd').value||'';
+  let list=master.filter(x=>x.schedule===d);
+  if(afdFilter) list=list.filter(x=>(x.afd||'').trim()===afdFilter);
+  const groups={};
+  list.forEach(x=>{
+    const a=(x.afd||'Tanpa AFD').trim()||'Tanpa AFD';
+    if(!groups[a]) groups[a]=[];
+    groups[a].push(x);
+  });
+  const rows=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0],'id')).map(([a,arr])=>{
+    const had=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='HADIR / PROSES').length;
+    const done=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;
+    const abs=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='TIDAK HADIR').length;
+    const pct=arr.length?Math.round(done/arr.length*100):0;
+    return `<tr>
+      <td><b>${a}</b><div class="monitor-mini-bar"><i style="width:${pct}%"></i></div></td>
+      <td>${arr.length}</td><td>${had}</td><td>${done}</td><td>${abs}</td><td><b>${pct}%</b></td>
+    </tr>`;
+  }).join('');
+  $('afdMonitoring').innerHTML=rows
+    ? `<div style="overflow:auto"><table class="monitor-table">
+        <thead><tr><th>AFD</th><th>Total</th><th>Hadir</th><th>Selesai</th><th>TA</th><th>%</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`
+    : '<div class="empty">Tidak ada peserta pada tanggal/filter ini.</div>';
+};
+
 window.renderHourly=()=>{
   const d=$('date').value,afd=$('filterAfd').value||'';
   let scheduled=master.filter(x=>x.schedule===d);
@@ -256,7 +304,7 @@ window.renderHourly=()=>{
     arr[new Date(x.completedAt).getHours()]++;
   });
   const total=scheduled.length,completed=arr.reduce((a,b)=>a+b,0),pct=total?Math.round(completed/total*100):0;
-  $('hourly').innerHTML=
+  $('hourlyTop').innerHTML=
     `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <b>Kehadiran / penyelesaian per jam</b><span class="sync">${pct}% selesai</span>
     </div>`+
