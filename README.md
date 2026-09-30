@@ -1,7 +1,8 @@
-# RANIA MCU 2026 v1.2
+# RANIA MCU 2026 v1.3
 
-- Status actions are now visible directly in the Master list.
-- Hadir / Selesai / Tidak Hadir / Reset write to the employee's scheduled MCU date automatically.
-- In MCU per Tanggal mode, actions use the selected date.
-- History remains separated by `NIK + scheduled date`.
-- IndexedDB remains local persistence until Firebase is configured.
+Added:
+- Dynamic AFD filter from imported master data.
+- AFD filter works in both Semua Master and MCU per Tanggal modes.
+- KPI cards follow the selected AFD.
+- Search + AFD + Status filters can be combined.
+- Reset clears search, AFD, and status filters.

@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <main>
 <div class="toolbar">
   <div><label>Tanggal MCU</label><br><input id="date" type="date" onchange="render()"></div>
-  <div><label>Mode Data</label><br><select id="viewMode" onchange="render()"><option value="master">Semua Master</option><option value="date">MCU per Tanggal</option></select></div><div><label>Status</label><br><select id="filterStatus" onchange="render()"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
+  <div><label>Mode Data</label><br><select id="viewMode" onchange="render()"><option value="master">Semua Master</option><option value="date">MCU per Tanggal</option></select></div><div><label>AFD</label><br><select id="filterAfd" onchange="render()"><option value="">Semua AFD</option></select></div><div><label>Status</label><br><select id="filterStatus" onchange="render()"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
   <div style="flex:1"></div>
   <button onclick="document.getElementById('file').click()">📥 Import Master Excel</button>
   <input id="file" type="file" accept=".xlsx,.xls" hidden onchange="importExcel(event)">
@@ -114,19 +114,34 @@ async function saveAttendance(row,status,dateOverride){
   render();
 }
 window.setStatus=(nik,status,dateOverride)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status,dateOverride||$('date').value)};
-window.resetSearch=()=>{$('search').value='';renderTable()};
+window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render()};
+function populateAfdFilter(){
+  const sel=$('filterAfd');
+  if(!sel)return;
+  const current=sel.value;
+  const afds=[...new Set(master.map(x=>(x.afd||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+  sel.innerHTML='<option value="">Semua AFD</option>'+afds.map(a=>`<option value="${a.replace(/"/g,'&quot;')}">${a}</option>`).join('');
+  if(afds.includes(current))sel.value=current;
+}
+
 window.render=()=>{
+  populateAfdFilter();
   const d=$('date').value;
   const mode=$('viewMode')?.value||'date';
   $('dateLabel').textContent=new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-  const list=master.filter(x=>x.schedule===d);
+  let list=master.filter(x=>x.schedule===d);
+  const afdFilter=$('filterAfd')?.value||'';
+  if(afdFilter) list=list.filter(x=>(x.afd||'').trim()===afdFilter);
   let had=0,done=0,abs=0;
   list.forEach(x=>{const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';if(s==='HADIR / PROSES')had++;if(s==='MCU SELESAI')done++;if(s==='TIDAK HADIR')abs++});
-  $('kTotal').textContent=mode==='master'?master.length:list.length;
-  $('kHad').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='HADIR / PROSES').length:had;
-  $('kDone').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='MCU SELESAI').length:done;
-  $('kAbsent').textContent=mode==='master'?Object.values(attendance).filter(x=>x.status==='TIDAK HADIR').length:abs;
-  $('kProgress').textContent=(mode==='master'?master.length:(list.length||0))?(mode==='master'?Math.round(Object.values(attendance).filter(x=>x.status==='MCU SELESAI').length/master.length*100):Math.round(done/list.length*100))+'%':'0%';
+  const masterFiltered=afdFilter?master.filter(x=>(x.afd||'').trim()===afdFilter):master;
+  const masterNiks=new Set(masterFiltered.map(x=>x.nik));
+  const allAtt=Object.values(attendance).filter(x=>masterNiks.has(x.nik));
+  $('kTotal').textContent=mode==='master'?masterFiltered.length:list.length;
+  $('kHad').textContent=mode==='master'?allAtt.filter(x=>x.status==='HADIR / PROSES').length:had;
+  $('kDone').textContent=mode==='master'?allAtt.filter(x=>x.status==='MCU SELESAI').length:done;
+  $('kAbsent').textContent=mode==='master'?allAtt.filter(x=>x.status==='TIDAK HADIR').length:abs;
+  $('kProgress').textContent=(mode==='master'?masterFiltered.length:(list.length||0))?(mode==='master'?Math.round(allAtt.filter(x=>x.status==='MCU SELESAI').length/masterFiltered.length*100):Math.round(done/list.length*100))+'%':'0%';
   $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+master.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+ $('dateLabel').textContent +'</span>';
   renderTable();renderHistory();renderHourly()
 };
@@ -134,6 +149,8 @@ window.render=()=>{
 window.renderTable=()=>{
   const d=$('date').value,q=$('search').value.toLowerCase(),f=$('filterStatus').value,mode=$('viewMode')?.value||'date';
   let list=mode==='master'?[...master]:master.filter(x=>x.schedule===d);
+  const afdFilter=$('filterAfd')?.value||'';
+  if(afdFilter) list=list.filter(x=>(x.afd||'').trim()===afdFilter);
   list=list.filter(x=>{
     const sd=mode==='master'?x.schedule:d;
     const s=attendance[x.nik+'_'+sd]?.status||'BELUM HADIR';
