@@ -1,20 +1,12 @@
-# RANIA MCU 2026 v0.6
+# RANIA MCU 2026 v0.7
 
-Standalone GitHub Pages prototype for RANIA — Real-time Attendance & MCU Intelligence Analytics.
+Prototype RANIA dengan master peserta terkunci dan attendance/status dipisahkan.
 
-## Upload
-Upload **index.html** to the root of the GitHub repository and replace the old index.html.
+- Master: read-only dari dashboard
+- Status: BELUM HADIR / HADIR-PROSES / MCU SELESAI / TIDAK HADIR
+- Salah input dapat di-Reset per peserta tanpa mengubah master
+- Refresh browser tidak menghapus status yang sudah tersimpan
+- Import Excel mengganti master dan mereset status attendance
+- Export Excel tetap tersedia
 
-This v0.6 is intentionally self-contained: the RANIA mark and palm dashboard artwork are inline, so the dashboard does not depend on an `assets/` folder.
-
-## Preserved functionality
-- Excel import (AMR/SIP, confirmation YA)
-- 1,379 participant prototype dataset
-- Attendance status workflow
-- Automatic timestamps
-- KPI dashboard
-- Hourly MCU chart
-- Company/Afdeling monitoring
-- Data quality checks
-- Excel export
-- localStorage persistence
+Untuk produksi, pindahkan master dan attendance ke Firebase Auth + Firestore. Security Rules dapat membatasi field master agar tidak dapat diubah client.
