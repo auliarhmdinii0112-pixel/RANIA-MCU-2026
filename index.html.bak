@@ -181,45 +181,125 @@ function populateAfdFilter(){
   if(afds.includes(current))sel.value=current;
 }
 
-window.getDashboardList=()=>{
-  const d=$('date').value, mode=$('viewMode').value||'master', afd=$('filterAfd').value||'', status=$('filterStatus').value||'';
-  let list=mode==='date'?master.filter(x=>x.schedule===d):[...master];
-  if(afd) list=list.filter(x=>(x.afd||'').trim()===afd);
-  if(status) list=list.filter(x=>(attendance[x.nik+'_'+x.schedule]?.status||'BELUM HADIR')===status);
-  return list;
-};
-
 window.renderFastDashboard=()=>{
-  const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'',status=$('filterStatus').value||'';
-  const targetList=getDashboardList();
+  const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'';
+  let dateList=master.filter(x=>x.schedule===d);
+  if(afd)dateList=dateList.filter(x=>(x.afd||'').trim()===afd);
+  const masterFiltered=afd?master.filter(x=>(x.afd||'').trim()===afd):master;
+  const targetList=mode==='date'?dateList:masterFiltered;
   const targetAtt=targetList.map(x=>attendance[x.nik+'_'+x.schedule]).filter(Boolean);
   const had=targetAtt.filter(x=>x.status==='HADIR / PROSES').length;
   const done=targetAtt.filter(x=>x.status==='MCU SELESAI').length;
   const abs=targetAtt.filter(x=>x.status==='TIDAK HADIR').length;
   const present=had+done,denom=targetList.length||0;
-  $('kTotal').textContent=denom; $('kHad').textContent=had; $('kDone').textContent=done; $('kAbsent').textContent=abs;
+  $('kTotal').textContent=denom;
+  $('kHad').textContent=had;
+  $('kDone').textContent=done;
+  $('kAbsent').textContent=abs;
   $('kProgress').textContent=(denom?Math.round(done/denom*100):0)+'%';
   document.querySelector('#kTotal').parentElement.querySelector('.l').textContent=mode==='master'?'Peserta master terfilter':'Peserta terjadwal';
   const attendancePct=denom?Math.round(present/denom*100):0;
   $('attendanceSummary').innerHTML=`<span class="sync">Kehadiran ${attendancePct}%</span><span class="status s1">Hadir/proses ${had}</span><span class="status s2">Selesai ${done}</span><span class="status s3">Tidak hadir ${abs}</span>`;
-  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+targetList.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+$('dateLabel').textContent+'</span>';
-  renderAfdMonitoring(); renderHourly();
+  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+masterFiltered.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+$('dateLabel').textContent+'</span>';
+  renderAfdMonitoring();
+  renderHourly();
 };
 
 window.render=()=>{
   populateAfdFilter();
-  const d=$('date').value;
+  const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'';
   $('dateLabel').textContent=new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-  renderFastDashboard();
-  renderTable(); renderHistory();
+
+  let dateList=master.filter(x=>x.schedule===d);
+  if(afd)dateList=dateList.filter(x=>(x.afd||'').trim()===afd);
+
+  const masterFiltered=afd?master.filter(x=>(x.afd||'').trim()===afd):master;
+  const targetList=mode==='date'?dateList:masterFiltered;
+  const targetAtt=targetList.map(x=>attendance[x.nik+'_'+x.schedule]).filter(Boolean);
+  const had=targetAtt.filter(x=>x.status==='HADIR / PROSES').length;
+  const done=targetAtt.filter(x=>x.status==='MCU SELESAI').length;
+  const abs=targetAtt.filter(x=>x.status==='TIDAK HADIR').length;
+  const present=had+done;
+  const denom=targetList.length||0;
+
+  $('kTotal').textContent=denom;
+  $('kHad').textContent=had;
+  $('kDone').textContent=done;
+  $('kAbsent').textContent=abs;
+  $('kProgress').textContent=(denom?Math.round(done/denom*100):0)+'%';
+  document.querySelector('#kTotal').parentElement.querySelector('.l').textContent=mode==='master'?'Peserta master terfilter':'Peserta terjadwal';
+
+  $('operatorTitle').innerHTML=mode==='master'
+    ?'Master Peserta MCU — <span style="color:var(--green)">'+masterFiltered.length.toLocaleString('id-ID')+' peserta</span>'
+    :'Operator MCU — <span>'+$('dateLabel').textContent+'</span>';
+
+  const attendancePct=denom?Math.round(present/denom*100):0;
+  $('attendanceSummary').innerHTML=
+    `<span class="sync">Kehadiran ${attendancePct}%</span>
+     <span class="status s1">Hadir/proses ${had}</span>
+     <span class="status s2">Selesai ${done}</span>
+     <span class="status s3">Tidak hadir ${abs}</span>`;
+
+  renderTable();renderHistory();renderAfdMonitoring();renderHourly();
 };
+
+window.renderTable=()=>{
+  const d=$('date').value,q=$('search').value.trim().toLowerCase(),f=$('filterStatus').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'';
+  let list=[...master];
+  if(mode==='date') list=list.filter(x=>x.schedule===d);
+  if(afd) list=list.filter(x=>(x.afd||'').trim()===afd);
+  list=list.filter(x=>{
+    const sd=mode==='date'?d:x.schedule;
+    const s=attendance[x.nik+'_'+sd]?.status||'BELUM HADIR';
+    return (!f||s===f) && (!q||[x.nik,x.name,x.afd,x.company,x.division,x.position,x.package,x.schedule].join(' ').toLowerCase().includes(q));
+  });
+  const limited=list.slice(0,500);
+  $('rows').innerHTML=limited.map(x=>{
+    const sd=x.schedule;
+    const a=attendance[x.nik+'_'+sd]||{};
+    const s=a.status||'BELUM HADIR';
+    const cls=s==='MCU SELESAI'?'s2':s==='HADIR / PROSES'?'s1':s==='TIDAK HADIR'?'s3':'s0';
+    const schedule=new Date(x.schedule+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    return `<tr>
+      <td><b>${x.nik}</b></td>
+      <td><b>${x.name}</b><div style="font-size:10px;color:var(--muted);margin-top:2px">${x.company||''} ${x.division?'• '+x.division:''} ${x.position?'• '+x.position:''}</div></td>
+      <td>${x.afd}</td><td>${x.package||'-'}</td>
+      <td><span class="status ${cls}">${s}</span></td>
+      <td><small style="display:block;color:var(--muted);margin-bottom:4px">Jadwal: ${schedule}</small>
+        <div class="actions">
+          <button onclick="setStatus('${x.nik}','HADIR / PROSES','${sd}')">Hadir</button>
+          <button class="done" onclick="setStatus('${x.nik}','MCU SELESAI','${sd}')">Selesai</button>
+          <button onclick="setStatus('${x.nik}','TIDAK HADIR','${sd}')">Tidak Hadir</button>
+          <button onclick="setStatus('${x.nik}','BELUM HADIR','${sd}')">Reset</button>
+        </div>
+      </td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta yang sesuai filter.</td></tr>';
+};
+
+window.renderHistory=()=>{
+  const afd=$('filterAfd')?.value||'';
+  const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();
+  $('history').innerHTML=dates.map(d=>{
+    let list=master.filter(x=>x.schedule===d);
+    if(afd)list=list.filter(x=>(x.afd||'').trim()===afd);
+    const done=list.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;
+    const had=list.filter(x=>attendance[x.nik+'_'+d]?.status==='HADIR / PROSES').length;
+    const abs=list.filter(x=>attendance[x.nik+'_'+d]?.status==='TIDAK HADIR').length;
+    const pct=list.length?Math.round(done/list.length*100):0;
+    const selected=$('date').value===d&&$('viewMode').value==='date';
+    return `<div class="day" style="${selected?'border:2px solid var(--green)':''}" onclick="document.getElementById('date').value='${d}';document.getElementById('viewMode').value='date';render()">
+      <strong>${new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</strong>
+      <span>${done}/${list.length} selesai • ${had} proses • ${abs} tidak hadir • ${pct}%</span>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }).join('')||'<div class="empty">Belum ada jadwal MCU.</div>';
+};
+
 
 window.renderAfdMonitoring=()=>{
   const d=$('date').value, mode=$('viewMode').value||'master', afdFilter=$('filterAfd').value||'';
   let list=mode==='date' ? master.filter(x=>x.schedule===d) : [...master];
   if(afdFilter) list=list.filter(x=>(x.afd||'').trim()===afdFilter);
-  const statusFilter=$('filterStatus').value||'';
-  if(statusFilter) list=list.filter(x=>(attendance[x.nik+'_'+x.schedule]?.status||'BELUM HADIR')===statusFilter);
   const groups={};
   list.forEach(x=>{
     const a=(x.afd||'Tanpa AFD').trim()||'Tanpa AFD';
@@ -254,12 +334,11 @@ window.renderAfdMonitoring=()=>{
 };
 
 window.renderHourly=()=>{
-  const d=$('date').value, mode=$('viewMode').value||'master', afd=$('filterAfd').value||'', statusFilter=$('filterStatus').value||'';
+  const d=$('date').value, mode=$('viewMode').value||'master', afd=$('filterAfd').value||'';
   const arr=Array(24).fill(0);
 
   Object.values(attendance).forEach(x=>{
     if(x.status!=='MCU SELESAI'||!x.completedAt)return;
-    if(statusFilter && statusFilter!=='MCU SELESAI')return;
 
     // Mode tanggal = hanya transaksi pada tanggal MCU yang dipilih.
     // Mode master = seluruh transaksi yang tersimpan, karena operator sedang melihat seluruh master.
@@ -275,8 +354,7 @@ window.renderHourly=()=>{
   });
 
   let denominator;
-  if(statusFilter && statusFilter!=='MCU SELESAI') denominator=0;
-  else if(mode==='date'){
+  if(mode==='date'){
     denominator=master.filter(x=>x.schedule===d && (!afd || String(x.afd||'').trim()===afd)).length;
   }else{
     denominator=master.filter(x=>!afd || String(x.afd||'').trim()===afd).length;
