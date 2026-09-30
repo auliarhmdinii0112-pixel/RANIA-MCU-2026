@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 </div>
 
 <div class="kpis">
-  <div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Peserta terjadwal / master sesuai tanggal</div></div>
+  <div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Peserta master / terjadwal</div></div>
   <div class="kpi"><div class="n" id="kHad">0</div><div class="l">Hadir / proses</div></div>
   <div class="kpi"><div class="n" id="kDone">0</div><div class="l">MCU selesai</div></div>
   <div class="kpi"><div class="n" id="kAbsent">0</div><div class="l">Tidak hadir</div></div>
@@ -49,7 +49,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <div class="grid">
 <section class="panel">
   <h2 id="operatorTitle">Operator MCU — <span id="dateLabel"></span></h2>
-  <div class="search"><input id="search" placeholder="Cari NIK / nama / AFD / perusahaan..." oninput="renderTable()"><button onclick="resetSearch()">Reset</button></div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Klik <b>Hadir</b>, <b>Selesai</b>, <b>Tidak Hadir</b>, atau <b>Reset</b>. Pada mode Semua Master, transaksi otomatis masuk ke tanggal jadwal masing-masing.</div><div class="search"><input id="search" placeholder="Cari NIK / nama / AFD / perusahaan..." oninput="renderTable()"><button onclick="resetSearch()">Reset</button></div>
   <div style="overflow:auto"><table><thead><tr><th>NIK</th><th>Nama</th><th>AFD</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div>
 </section>
 <section class="panel">
@@ -101,9 +101,10 @@ async function connectFirebase(cfg){
   const as=await getDocs(collection(fs,'attendance')); attendance=Object.fromEntries(as.docs.map(d=>[d.id,d.data()]));
   render();
 }
-async function saveAttendance(row,status){
-  const id=row.nik+'_'+$('date').value;
-  const old=attendance[id]||{id,nik:row.nik,scheduledDate:$('date').value};
+async function saveAttendance(row,status,dateOverride){
+  const targetDate=dateOverride||$('date').value;
+  const id=row.nik+'_'+targetDate;
+  const old=attendance[id]||{id,nik:row.nik,scheduledDate:targetDate};
   const now=new Date().toISOString();
   const item={...old,status,updatedAt:now};
   if(status==='HADIR / PROSES' && !old.checkInAt)item.checkInAt=now;
@@ -112,7 +113,7 @@ async function saveAttendance(row,status){
   if(fs)await setDoc(doc(fs,'attendance',id),item,{merge:true});
   render();
 }
-window.setStatus=(nik,status)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status)};
+window.setStatus=(nik,status,dateOverride)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status,dateOverride||$('date').value)};
 window.resetSearch=()=>{$('search').value='';renderTable()};
 window.render=()=>{
   const d=$('date').value;
@@ -134,19 +135,24 @@ window.renderTable=()=>{
   const d=$('date').value,q=$('search').value.toLowerCase(),f=$('filterStatus').value,mode=$('viewMode')?.value||'date';
   let list=mode==='master'?[...master]:master.filter(x=>x.schedule===d);
   list=list.filter(x=>{
-    const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';
+    const sd=mode==='master'?x.schedule:d;
+    const s=attendance[x.nik+'_'+sd]?.status||'BELUM HADIR';
     return(!f||s===f)&&(!q||[x.nik,x.name,x.afd,x.company,x.division,x.position,x.package,x.schedule].join(' ').toLowerCase().includes(q))
   });
   const limited=list.slice(0,500);
   $('rows').innerHTML=limited.map(x=>{
-    const s=attendance[x.nik+'_'+d]?.status||'BELUM HADIR';
+    const sd=mode==='master'?x.schedule:d;
+    const s=attendance[x.nik+'_'+sd]?.status||'BELUM HADIR';
     const cls=s==='MCU SELESAI'?'s2':s==='HADIR / PROSES'?'s1':s==='TIDAK HADIR'?'s3':'s0';
     const schedule=new Date(x.schedule+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
-    const actions=mode==='master'
-      ? `<span style="color:var(--muted);font-size:11px">Jadwal: ${schedule}</span>`
-      : `<div class="actions"><button onclick="setStatus('${x.nik}','HADIR / PROSES')">Hadir</button><button class="done" onclick="setStatus('${x.nik}','MCU SELESAI')">Selesai</button><button onclick="setStatus('${x.nik}','TIDAK HADIR')">Tidak Hadir</button><button onclick="setStatus('${x.nik}','BELUM HADIR')">Reset</button></div>`;
-    return `<tr><td><b>${x.nik}</b></td><td>${x.name}</td><td>${x.afd}</td><td>${x.package||'-'}</td><td><span class="status ${cls}">${mode==='master'?'MASTER':s}</span></td><td>${actions}</td></tr>`
-  }).join('')||'<tr><td colspan="6" class="empty">Master belum terisi. Tekan Import Master Excel.</td></tr>';
+    const actions=`<div class="actions">
+      <button onclick="setStatus('${x.nik}','HADIR / PROSES','${sd}')">Hadir</button>
+      <button class="done" onclick="setStatus('${x.nik}','MCU SELESAI','${sd}')">Selesai</button>
+      <button onclick="setStatus('${x.nik}','TIDAK HADIR','${sd}')">Tidak Hadir</button>
+      <button onclick="setStatus('${x.nik}','BELUM HADIR','${sd}')">Reset</button>
+    </div>`;
+    return `<tr><td><b>${x.nik}</b></td><td>${x.name}</td><td>${x.afd}</td><td>${x.package||'-'}</td><td><span class="status ${cls}">${s}</span></td><td>${mode==='master'?'<small style="display:block;color:var(--muted);margin-bottom:4px">Jadwal: '+schedule+'</small>':''}${actions}</td></tr>`
+  }).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta pada filter ini.</td></tr>';
 };
 
 window.renderHistory=()=>{const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();$('history').innerHTML=dates.map(d=>{const list=master.filter(x=>x.schedule===d);const done=list.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;const pct=list.length?Math.round(done/list.length*100):0;return `<div class="day" onclick="document.getElementById('date').value='${d}';render()"><strong>${new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</strong><span>${done}/${list.length} selesai • ${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')||'<div class="empty">Import master Excel terlebih dahulu.</div>'};

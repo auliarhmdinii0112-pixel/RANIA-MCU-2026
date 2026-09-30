@@ -1,8 +1,7 @@
-# RANIA MCU 2026 v1.1
+# RANIA MCU 2026 v1.2
 
-Fixes:
-- Master data is always viewable via Mode Data = Semua Master.
-- Import switches automatically to Semua Master so imported employees are immediately visible.
-- MCU per Tanggal remains available for daily operation and historical attendance.
-- Excel date parsing handles Excel serial dates.
-- Master is still stored in IndexedDB locally and can be synced to Firestore once Firebase is configured.
+- Status actions are now visible directly in the Master list.
+- Hadir / Selesai / Tidak Hadir / Reset write to the employee's scheduled MCU date automatically.
+- In MCU per Tanggal mode, actions use the selected date.
+- History remains separated by `NIK + scheduled date`.
+- IndexedDB remains local persistence until Firebase is configured.
