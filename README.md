@@ -1,20 +1,21 @@
-# RANIA MCU 2026 v0.3
+# RANIA MCU 2026 v0.4
 
-Functional prototype with:
-- Robust Excel import mapping, including multiple Name/AFD header variants.
-- Filter per Afdeling.
-- Filter per Company.
-- Filter per Status.
-- Search NIK/name.
-- Afdeling insight: participant count, completed, remaining, progress.
-- Status changes with automatic browser timestamp.
-- Hourly MCU chart from completion timestamps.
-- Data quality checks.
-- Excel export.
-- localStorage for prototype persistence.
+Light green corporate dashboard with functional Excel import based on the actual MCU workbook structure.
 
-Recommended dashboard logic:
-1. Executive KPI stays global.
-2. Afdeling filter changes the participant-control view and Afdeling insight.
-3. Status filter answers who came / did not come / completed.
-4. Firebase will later replace localStorage for real-time multi-user operation.
+Actual source sheets:
+- AMR
+- SIP
+
+Actual fields mapped:
+Company Id, Emp No, Name, Position Title, AFD, Org Name/Divisi, Paket MCU, Konfirmasi data HRGA, Jadwal MCU, plus gender/age.
+
+Logic:
+- Only participants with HRGA confirmation YA are imported.
+- Initial attendance status = BELUM HADIR.
+- Status can be changed to HADIR / PROSES, MCU SELESAI, or TIDAK HADIR.
+- Timestamp is automatic for attendance/progress actions.
+- KPI, Afdeling, Company, Status, search and hourly chart are calculated from the current data.
+- Excel export included.
+- localStorage used until Firebase is connected.
+
+Branding is a custom RANIA/Astra Agro Lestari-inspired presentation; official logo assets are not embedded as a replacement for corporate brand files.
