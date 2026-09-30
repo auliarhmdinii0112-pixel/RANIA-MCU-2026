@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RANIA — MCU Control Tower 2026</title>
+<style>
+:root{
+  --bg:#07101c; --panel:#0d1725; --panel2:#111d2d; --line:#243246;
+  --text:#f4f7fb; --muted:#91a0b4; --accent:#65d6b4; --blue:#6ea8ff;
+  --yellow:#f4c95d; --red:#ff6b78; --purple:#a78bfa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#050b13,#091423 55%,#07111d);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input{font:inherit}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:#08111e;border-right:1px solid var(--line);padding:24px 16px;position:fixed;inset:0 auto 0 0}
+.brand{padding:8px 12px 26px;border-bottom:1px solid var(--line)}
+.brand h1{margin:0;font-size:30px;letter-spacing:2px}
+.brand p{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.4}
+.nav{padding-top:22px}
+.nav button{width:100%;border:0;background:transparent;color:var(--muted);text-align:left;padding:13px 14px;border-radius:12px;margin-bottom:6px;cursor:pointer}
+.nav button.active,.nav button:hover{background:#122033;color:#fff}
+.nav small{display:block;color:#526278;padding:18px 14px 7px;text-transform:uppercase;letter-spacing:1px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:30px}
+.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:25px}
+.title h2{margin:0;font-size:28px}.title p{margin:6px 0;color:var(--muted)}
+.signature{font-size:11px;color:#7f91a8;text-align:right}
+.controls{display:flex;gap:10px;margin-top:12px}
+.btn{border:1px solid var(--line);background:#0d1928;color:#dce6f2;padding:10px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:#3b526e}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.card{background:linear-gradient(180deg,#0e1928,#0b1522);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.12)}
+.kpi-label{color:var(--muted);font-size:12px}.kpi-value{font-size:28px;font-weight:750;margin-top:9px}.kpi-note{font-size:11px;color:#718299;margin-top:5px}
+.grid{display:grid;grid-template-columns:1.45fr 1fr;gap:16px;margin-top:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px}
+.card h3{margin:0 0 4px;font-size:16px}.sub{font-size:11px;color:var(--muted);margin-bottom:15px}
+.hour-wrap{display:flex;align-items:flex-end;gap:9px;height:190px;padding:15px 4px 5px}
+.bar-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.bar{width:100%;max-width:38px;background:linear-gradient(180deg,var(--accent),#2b9d88);border-radius:7px 7px 2px 2px;min-height:4px}
+.bar-col span{font-size:9px;color:var(--muted)}.bar-col b{font-size:10px}
+.progress{height:10px;background:#1a2838;border-radius:20px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--blue));border-radius:20px}
+.row{display:flex;justify-content:space-between;align-items:center;margin:12px 0}.row span{font-size:12px;color:#c9d4e1}.row b{font-size:12px}
+.badge{padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}.green{background:#12372f;color:#74e4c3}.yellow{background:#3b3219;color:#f6d66e}.red{background:#3b1d25;color:#ff8d98}.blue{background:#172b49;color:#8db8ff}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:11px 8px;border-bottom:1px solid #1d2a3b;text-align:left}th{color:#718299;font-size:10px;text-transform:uppercase;letter-spacing:.5px}td{color:#d7e0eb}
+.search{width:100%;background:#0a1421;border:1px solid var(--line);color:white;padding:11px 12px;border-radius:10px;margin:12px 0}
+.footer{text-align:center;color:#526278;font-size:10px;padding:25px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.grid,.grid3{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:15px}
+  .nav{display:flex;gap:6px;overflow:auto;padding-top:12px}.nav small{display:none}.nav button{white-space:nowrap;width:auto}
+  .app{display:block}.main{margin-left:0;width:100%;padding:18px}.kpis{grid-template-columns:repeat(2,1fr)}
+  .top{display:block}.signature{text-align:left;margin-top:12px}.kpi-value{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <h1>RANIA</h1>
+    <p>Real-time Attendance &amp; MCU Intelligence Analytics</p>
+  </div>
+  <nav class="nav">
+    <small>Monitoring</small>
+    <button class="active">Dashboard</button>
+    <button>Participants</button>
+    <button>Hourly MCU</button>
+    <small>Management</small>
+    <button>Companies / AFD</button>
+    <button>Data Quality</button>
+    <button>Reports</button>
+  </nav>
+</aside>
+
+<main class="main">
+  <section class="top">
+    <div class="title">
+      <h2>MCU Control Tower 2026</h2>
+      <p>Real-time monitoring peserta medical check-up</p>
+      <div class="controls">
+        <button class="btn" onclick="refreshDashboard()">↻ Refresh</button>
+        <button class="btn" onclick="alert('Import Excel akan dihubungkan setelah Firebase aktif.')">＋ Import Master</button>
+      </div>
+    </div>
+    <div class="signature">Designed &amp; Powered by Aulia<br><span id="clock"></span></div>
+  </section>
+
+  <section class="kpis">
+    <div class="card"><div class="kpi-label">TOTAL PESERTA</div><div class="kpi-value" id="total">1,379</div><div class="kpi-note">AMR + SIP</div></div>
+    <div class="card"><div class="kpi-label">TERJADWAL</div><div class="kpi-value">1,379</div><div class="kpi-note">Master schedule</div></div>
+    <div class="card"><div class="kpi-label">MCU SELESAI</div><div class="kpi-value" id="done">642</div><div class="kpi-note">Timestamp tercatat</div></div>
+    <div class="card"><div class="kpi-label">BELUM MCU</div><div class="kpi-value" id="pending">737</div><div class="kpi-note">Perlu monitoring</div></div>
+    <div class="card"><div class="kpi-label">PROGRESS</div><div class="kpi-value" id="pct">46.6%</div><div class="progress"><i style="width:46.6%"></i></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h3>MCU Per Jam</h3>
+      <div class="sub">Jumlah MCU selesai berdasarkan timestamp transaksi hari ini</div>
+      <div class="hour-wrap" id="hours"></div>
+    </div>
+    <div class="card">
+      <h3>Status Peserta</h3>
+      <div class="sub">Distribusi status monitoring</div>
+      <div class="row"><span>MCU Selesai</span><b>642</b></div><div class="progress"><i style="width:46.6%"></i></div>
+      <div class="row"><span>Hadir / Proses</span><b>119</b></div><div class="progress"><i style="width:8.6%"></i></div>
+      <div class="row"><span>Belum Hadir</span><b>581</b></div><div class="progress"><i style="width:42.1%"></i></div>
+      <div class="row"><span>Tidak Hadir</span><b>37</b></div><div class="progress"><i style="width:2.7%"></i></div>
+    </div>
+  </section>
+
+  <section class="grid3">
+    <div class="card">
+      <h3>Company</h3><div class="sub">Distribusi peserta</div>
+      <div class="row"><span>PT AMR</span><b>503</b></div><div class="progress"><i style="width:36.5%"></i></div>
+      <div class="row"><span>PT SIP</span><b>876</b></div><div class="progress"><i style="width:63.5%"></i></div>
+    </div>
+    <div class="card">
+      <h3>MCU Package</h3><div class="sub">Monitoring paket pemeriksaan</div>
+      <div class="row"><span>Package A</span><b>734</b></div>
+      <div class="row"><span>Package B</span><b>645</b></div>
+    </div>
+    <div class="card">
+      <h3>Data Quality</h3><div class="sub">Alert master data</div>
+      <div class="row"><span>Data lengkap</span><span class="badge green">READY</span></div>
+      <div class="row"><span>Label perlu review</span><span class="badge yellow">CHECK</span></div>
+      <div class="row"><span>EXIT / tidak aktif</span><span class="badge red">ALERT</span></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h3>Participant Control</h3>
+    <div class="sub">Prototype pencarian peserta — input NIK akan terhubung ke Firebase pada tahap berikutnya</div>
+    <input class="search" id="search" placeholder="Cari NIK atau nama..." oninput="filterTable()">
+    <table>
+      <thead><tr><th>NIK</th><th>Nama</th><th>Company</th><th>AFD</th><th>Status</th><th>Update</th></tr></thead>
+      <tbody id="people">
+        <tr><td>AMR-0001</td><td>Peserta Demo 01</td><td>AMR</td><td>AFD 1</td><td><span class="badge green">MCU SELESAI</span></td><td>10:42</td></tr>
+        <tr><td>SIP-0002</td><td>Peserta Demo 02</td><td>SIP</td><td>AFD 2</td><td><span class="badge blue">HADIR</span></td><td>10:37</td></tr>
+        <tr><td>AMR-0003</td><td>Peserta Demo 03</td><td>AMR</td><td>AFD 3</td><td><span class="badge yellow">PENDING</span></td><td>—</td></tr>
+        <tr><td>SIP-0004</td><td>Peserta Demo 04</td><td>SIP</td><td>AFD 4</td><td><span class="badge red">TIDAK HADIR</span></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">RANIA v0.1 • Prototype dashboard • Data demo, belum terhubung Firebase</div>
+</main>
+</div>
+<script>
+const hourly=[18,32,47,61,74,88,96,81,62,43,28,12];
+function renderHours(){
+  const max=Math.max(...hourly);
+  document.getElementById('hours').innerHTML=hourly.map((n,i)=>`
+    <div class="bar-col"><b>${n}</b><div class="bar" style="height:${Math.max(5,n/max*145)}px"></div><span>${String(i+7).padStart(2,'0')}:00</span></div>
+  `).join('');
+}
+function filterTable(){
+  const q=document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('#people tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none');
+}
+function refreshDashboard(){renderHours(); document.getElementById('clock').textContent='Last refresh: '+new Date().toLocaleTimeString('id-ID');}
+renderHours(); refreshDashboard(); setInterval(refreshDashboard,30000);
+</script>
+</body>
+</html>
