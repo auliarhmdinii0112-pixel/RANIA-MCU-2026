@@ -38,6 +38,10 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <button onclick="openSettings()">🔒 Master & Firebase</button>
 </div>
 
+<div class="panel" style="margin-top:14px;padding:10px 14px;font-size:12px;background:#f8fcf9">
+  <b>Alur operator:</b> pilih <b>MCU per Tanggal</b> untuk kontrol harian, atau tetap di <b>Semua Master</b> untuk mencari peserta. Klik <b>Hadir → Selesai</b>. <b>Reset</b> mengembalikan ke BELUM HADIR dan menghapus timestamp transaksi.
+</div>
+
 <div class="kpis">
   <div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Peserta master / terjadwal</div></div>
   <div class="kpi"><div class="n" id="kHad">0</div><div class="l">Hadir / proses</div></div>
@@ -106,10 +110,19 @@ async function saveAttendance(row,status,dateOverride){
   const id=row.nik+'_'+targetDate;
   const old=attendance[id]||{id,nik:row.nik,scheduledDate:targetDate};
   const now=new Date().toISOString();
-  const item={...old,status,updatedAt:now};
-  if(status==='HADIR / PROSES' && !old.checkInAt)item.checkInAt=now;
-  if(status==='MCU SELESAI')item.completedAt=now;
-  attendance[id]=item;await localPut('attendance',item);
+  let item={...old,status,updatedAt:now};
+  if(status==='BELUM HADIR'){
+    item={id,nik:row.nik,scheduledDate:targetDate,status:'BELUM HADIR',updatedAt:now};
+  }else{
+    if(status==='HADIR / PROSES' && !old.checkInAt)item.checkInAt=now;
+    if(status==='MCU SELESAI'){
+      if(!item.checkInAt)item.checkInAt=now;
+      item.completedAt=now;
+    }
+    if(status==='TIDAK HADIR')item.absentAt=old.absentAt||now;
+  }
+  attendance[id]=item;
+  await localPut('attendance',item);
   if(fs)await setDoc(doc(fs,'attendance',id),item,{merge:true});
   render();
 }
@@ -138,11 +151,12 @@ window.render=()=>{
   const masterNiks=new Set(masterFiltered.map(x=>x.nik));
   const allAtt=Object.values(attendance).filter(x=>masterNiks.has(x.nik));
   $('kTotal').textContent=mode==='master'?masterFiltered.length:list.length;
+  document.querySelector('#kTotal').parentElement.querySelector('.l').textContent=mode==='master'?'Master peserta':'Peserta terjadwal';
   $('kHad').textContent=mode==='master'?allAtt.filter(x=>x.status==='HADIR / PROSES').length:had;
   $('kDone').textContent=mode==='master'?allAtt.filter(x=>x.status==='MCU SELESAI').length:done;
   $('kAbsent').textContent=mode==='master'?allAtt.filter(x=>x.status==='TIDAK HADIR').length:abs;
   $('kProgress').textContent=(mode==='master'?masterFiltered.length:(list.length||0))?(mode==='master'?Math.round(allAtt.filter(x=>x.status==='MCU SELESAI').length/masterFiltered.length*100):Math.round(done/list.length*100))+'%':'0%';
-  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+master.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+ $('dateLabel').textContent +'</span>';
+  $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+masterFiltered.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+ $('dateLabel').textContent +'</span>';
   renderTable();renderHistory();renderHourly()
 };
 
@@ -172,8 +186,42 @@ window.renderTable=()=>{
   }).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta pada filter ini.</td></tr>';
 };
 
-window.renderHistory=()=>{const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();$('history').innerHTML=dates.map(d=>{const list=master.filter(x=>x.schedule===d);const done=list.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;const pct=list.length?Math.round(done/list.length*100):0;return `<div class="day" onclick="document.getElementById('date').value='${d}';render()"><strong>${new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</strong><span>${done}/${list.length} selesai • ${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')||'<div class="empty">Import master Excel terlebih dahulu.</div>'};
-window.renderHourly=()=>{const d=$('date').value,arr=Array(24).fill(0);Object.values(attendance).forEach(x=>{if(x.scheduledDate===d&&x.status==='MCU SELESAI'&&x.completedAt){arr[new Date(x.completedAt).getHours()]++}});$('hourly').innerHTML=arr.map((n,h)=>n?`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><b style="width:42px">${String(h).padStart(2,'0')}:00</b><div class="bar" style="flex:1"><i style="width:${Math.min(100,n*10)}%"></i></div><b>${n}</b></div>`:'').join('')||'<div class="empty">Belum ada transaksi MCU selesai.</div>'};
+window.renderHistory=()=>{
+  const afd=$('filterAfd')?.value||'';
+  const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();
+  $('history').innerHTML=dates.map(d=>{
+    let list=master.filter(x=>x.schedule===d);
+    if(afd)list=list.filter(x=>(x.afd||'').trim()===afd);
+    const done=list.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;
+    const had=list.filter(x=>attendance[x.nik+'_'+d]?.status==='HADIR / PROSES').length;
+    const abs=list.filter(x=>attendance[x.nik+'_'+d]?.status==='TIDAK HADIR').length;
+    const pct=list.length?Math.round(done/list.length*100):0;
+    const selected=$('date').value===d&&$('viewMode').value==='date';
+    return `<div class="day" style="${selected?'border:2px solid var(--green)':''}" onclick="document.getElementById('date').value='${d}';document.getElementById('viewMode').value='date';render()">
+      <strong>${new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</strong>
+      <span>${done}/${list.length} selesai • ${had} proses • ${abs} tidak hadir • ${pct}%</span>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }).join('')||'<div class="empty">Belum ada jadwal MCU.</div>';
+};
+
+window.renderHourly=()=>{
+  const d=$('date').value,afd=$('filterAfd')?.value||'',arr=Array(24).fill(0);
+  Object.values(attendance).forEach(x=>{
+    if(x.scheduledDate!==d||x.status!=='MCU SELESAI'||!x.completedAt)return;
+    if(afd){
+      const emp=master.find(m=>m.nik===x.nik);
+      if(!emp||String(emp.afd||'').trim()!==afd)return;
+    }
+    arr[new Date(x.completedAt).getHours()]++;
+  });
+  const max=Math.max(1,...arr);
+  $('hourly').innerHTML=arr.map((n,h)=>n?`<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+    <b style="width:42px">${String(h).padStart(2,'0')}:00</b>
+    <div class="bar" style="flex:1"><i style="width:${Math.round(n/max*100)}%"></i></div>
+    <b>${n}</b>
+  </div>`:'').join('')||'<div class="empty">Belum ada transaksi MCU selesai pada tanggal ini.</div>';
+};
 
 window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=r['Jadwal MCU']??r['Tanggal MCU']??'';if(dt instanceof Date)dt=dt.toISOString().slice(0,10);else if(dt){
   if(typeof dt==='number'){
