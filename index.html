@@ -41,7 +41,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 <main>
 <div class="toolbar">
   <div><label>Tanggal MCU</label><br><input id="date" type="date"></div>
-  <div><label>Mode Data</label><br><select id="viewMode"><option value="date">MCU per Tanggal</option><option value="master">Semua Master</option></select></div><div><label>AFD</label><br><select id="filterAfd"><option value="">Semua AFD</option></select></div><div><label>Status</label><br><select id="filterStatus"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
+  <div><label>Mode Data</label><br><select id="viewMode"><option value="master">Semua Master</option><option value="date">MCU per Tanggal</option></select></div><div><label>AFD</label><br><select id="filterAfd"><option value="">Semua AFD</option></select></div><div><label>Status</label><br><select id="filterStatus"><option value="">Semua</option><option>BELUM HADIR</option><option>HADIR / PROSES</option><option>MCU SELESAI</option><option>TIDAK HADIR</option></select></div>
   <div style="flex:1"></div>
   <button class="primary" onclick="applyFilters()">🔎 Terapkan Filter</button><button onclick="resetAllFilters()">↺ Reset Filter</button><button onclick="document.getElementById('file').click()">📥 Import Master Excel</button>
   <input id="file" type="file" accept=".xlsx,.xls" hidden onchange="importExcel(event)">
@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v2.9 • Daily Control Tower + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v2.1 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -107,78 +107,9 @@ let master=[], attendance={}, fb=null, fs=null, auth=null, unsub=null;
 const $=id=>document.getElementById(id);
 const today=new Date().toISOString().slice(0,10);
 $('date').value=today;
-$('viewMode').value='date';
-function getControlDate(){const dates=[...new Set(master.map(x=>x.schedule).filter(Boolean))].sort();return dates.find(d=>d>=today)||dates[dates.length-1]||today;}
-function setDailyControlDate(){if(master.length){$('date').value=getControlDate();}else if(!$('date').value){$('date').value=today;} $('viewMode').value='date';}
 
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('master'))d.createObjectStore('master',{keyPath:'nik'});if(!d.objectStoreNames.contains('attendance'))d.createObjectStore('attendance',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-
-function datePartsISO(d){
-  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
-}
-function normalizeMCUDate(v){
-  if(v instanceof Date && !isNaN(v)) return datePartsISO(v);
-  if(typeof v==='number' && Number.isFinite(v)){
-    const d=new Date(Date.UTC(1899,11,30)+v*86400000);
-    return d.toISOString().slice(0,10);
-  }
-  const s=String(v??'').trim();
-  if(!s) return '';
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const d=new Date(s);
-  if(!isNaN(d)) return datePartsISO(d);
-  return s;
-}
-function shiftISODate(iso,days){
-  const d=new Date(iso+'T00:00:00');
-  if(isNaN(d)) return iso;
-  d.setDate(d.getDate()+days);
-  return datePartsISO(d);
-}
-function looksLikeLegacyMinusOneDay(rows){
-  const ds=[...new Set(rows.map(x=>x.schedule).filter(Boolean))].sort();
-  if(!ds.length) return false;
-  // The previous SheetJS Date -> toISOString conversion shifted the 2026 MCU
-  // schedule one day earlier. Detect the characteristic legacy range.
-  const has12=ds.includes('2026-10-12'), has18=ds.includes('2026-10-18');
-  const has21=ds.includes('2026-10-21');
-  return has12 && has18 && !has21;
-}
-async function repairLegacyDateShift(){
-  if(!master.length || !looksLikeLegacyMinusOneDay(master)) return false;
-  const oldMaster=[...master];
-  const map=new Map();
-  master=oldMaster.map(x=>{
-    const y={...x,schedule:shiftISODate(x.schedule,1)};
-    map.set(x.nik+'_'+x.schedule,y.schedule);
-    return y;
-  });
-
-  const oldAtt={...attendance};
-  const newAtt={};
-  for(const a of Object.values(oldAtt)){
-    if(!a || !a.nik || !a.scheduledDate) continue;
-    const ns=shiftISODate(a.scheduledDate,1);
-    const id=a.nik+'_'+ns;
-    newAtt[id]={...a,id,scheduledDate:ns};
-  }
-  attendance=newAtt;
-
-  for(const x of master) await localPut('master',x);
-  for(const old of Object.values(oldAtt)) if(old?.id) await localDelete('attendance',old.id);
-  for(const a of Object.values(attendance)) await localPut('attendance',a);
-
-  if(fs){
-    const b=writeBatch(fs);
-    for(const x of master) b.set(doc(fs,'employees',x.nik),x,{merge:true});
-    for(const a of Object.values(attendance)) b.set(doc(fs,'attendance',a.id),a,{merge:true});
-    await b.commit();
-  }
-  return true;
-}
-
-async function localLoad(){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(['master','attendance'],'readonly');const a=[];const b=[];tx.objectStore('master').openCursor().onsuccess=e=>{const c=e.target.result;if(c){a.push(c.value);c.continue()}};tx.objectStore('attendance').openCursor().onsuccess=e=>{const c=e.target.result;if(c){b.push(c.value);c.continue()}};tx.oncomplete=async()=>{master=a;attendance=Object.fromEntries(b.map(x=>[x.id,x]));try{await repairLegacyDateShift()}catch(e){console.warn('Date repair skipped',e)}res()};tx.onerror=()=>rej(tx.error)})}
+async function localLoad(){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(['master','attendance'],'readonly');const a=[];const b=[];tx.objectStore('master').openCursor().onsuccess=e=>{const c=e.target.result;if(c){a.push(c.value);c.continue()}};tx.objectStore('attendance').openCursor().onsuccess=e=>{const c=e.target.result;if(c){b.push(c.value);c.continue()}};tx.oncomplete=()=>{master=a;attendance=Object.fromEntries(b.map(x=>[x.id,x]));res()};tx.onerror=()=>rej(tx.error)})}
 async function localPut(store,obj){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).put(obj);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
 async function localDelete(store,key){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
 async function localClear(){const d=await openDB();return new Promise((res,rej)=>{const tx=d.transaction(['master','attendance'],'readwrite');tx.objectStore('master').clear();tx.objectStore('attendance').clear();tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
@@ -239,15 +170,15 @@ async function saveAttendance(row,status,dateOverride){
     });
 }
 window.setStatus=(nik,status,dateOverride)=>{const r=master.find(x=>x.nik===nik);if(r)saveAttendance(r,status,dateOverride||r.schedule||$('date').value)};
-window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';setDailyControlDate();render()};
+window.resetSearch=()=>{$('search').value='';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render()};
 function applyFilters(){ render(); }
 window.applyFilters=applyFilters;
 window.resetAllFilters=()=>{
   $('search').value='';
   $('filterAfd').value='';
   $('filterStatus').value='';
-  $('viewMode').value='date';
-  setDailyControlDate();
+  $('viewMode').value='master';
+  $('date').value=new Date().toISOString().slice(0,10);
   render();
 };
 document.addEventListener('keydown',e=>{
@@ -270,12 +201,6 @@ window.getDashboardList=()=>{
   if(status) list=list.filter(x=>(attendance[x.nik+'_'+x.schedule]?.status||'BELUM HADIR')===status);
   return list;
 };
-
-
-function getActiveDate(){
-  const el=document.getElementById('date');
-  return el ? el.value : '';
-}
 
 window.renderFastDashboard=()=>{
   const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'',status=$('filterStatus').value||'';
@@ -455,7 +380,15 @@ window.renderHourly=()=>{
       : `<div class="empty">${mode==='date'?'Belum ada transaksi MCU selesai pada tanggal ini.':'Belum ada transaksi MCU selesai tersimpan.'}</div>`);
 };
 
-window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=normalizeMCUDate(r['Jadwal MCU']??r['Tanggal MCU']??'');out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='date';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render();ev.target.value=''};
+window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=r['Jadwal MCU']??r['Tanggal MCU']??'';if(dt instanceof Date)dt=dt.toISOString().slice(0,10);else if(dt){
+  if(typeof dt==='number'){
+    const epoch=new Date(Date.UTC(1899,11,30)+dt*86400000);
+    dt=epoch.toISOString().slice(0,10);
+  }else{
+    const parsed=new Date(dt);
+    if(!isNaN(parsed))dt=parsed.toISOString().slice(0,10);
+  }
+}out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='master';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render();ev.target.value=''};
 
 window.exportHistory=()=>{
   try{
@@ -505,6 +438,6 @@ window.exportHistory=()=>{
   }
 };
 
-(async()=>{await localLoad();setDailyControlDate();const cfg=localStorage.getItem('RANIA_FIREBASE_CONFIG');if(cfg){try{await connectFirebase(JSON.parse(cfg))}catch(e){console.warn(e)}}render()})();
+(async()=>{await localLoad();const cfg=localStorage.getItem('RANIA_FIREBASE_CONFIG');if(cfg){try{await connectFirebase(JSON.parse(cfg))}catch(e){console.warn(e)}}render()})();
 </script>
 </body></html>
