@@ -239,6 +239,41 @@ window.renderTable=()=>{
   }).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta yang sesuai filter.</td></tr>';
 };
 
+window.renderHistory=()=>{
+  const box=$('history');
+  if(!box)return;
+  const byDate={};
+  Object.values(attendance).forEach(a=>{
+    if(!a || !a.scheduledDate)return;
+    const d=a.scheduledDate;
+    if(!byDate[d])byDate[d]={total:0,hadir:0,done:0,absent:0};
+    if(a.status && a.status!=='BELUM HADIR')byDate[d].total++;
+    if(a.status==='HADIR / PROSES')byDate[d].hadir++;
+    if(a.status==='MCU SELESAI')byDate[d].done++;
+    if(a.status==='TIDAK HADIR')byDate[d].absent++;
+  });
+  const dates=Object.keys(byDate).sort().reverse();
+  box.innerHTML=dates.length ? dates.map(d=>{
+    const x=byDate[d];
+    const pct=x.total?Math.round(x.done/x.total*100):0;
+    const label=new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    return `<div class="day" onclick="jumpHistory('${d}')">
+      <strong>${label}</strong>
+      <span>Selesai ${x.done} • Hadir ${x.hadir} • Tidak hadir ${x.absent}</span>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <span>${pct}% selesai</span>
+    </div>`;
+  }).join('') : '<div class="empty" style="grid-column:1/-1">Belum ada historical transaksi MCU.</div>';
+};
+window.jumpHistory=(d)=>{
+  $('date').value=d;
+  $('viewMode').value='date';
+  $('filterAfd').value='';
+  $('filterStatus').value='';
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
 window.render=()=>{
   populateAfdFilter();
   const d=$('date').value;
@@ -342,7 +377,32 @@ window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;cons
   }
 }out.push({nik,name,company:String(r['Company Id']??r['Company']??'').trim(),afd:String(r['AFD']??'').trim(),division:String(r['Org Name/Divisi']??r['Divisi']??'').trim(),position:String(r['Position Title']??r['Jabatan']??'').trim(),package:String(r['Paket MCU']??r['Paket']??'').trim(),schedule:dt,gender:String(r['Gender']??r['Jenis Kelamin']??'').trim(),age:String(r['Age']??r['Usia']??'').trim()})}}const map=new Map(out.map(x=>[x.nik,x]));master=[...map.values()];for(const x of master)await localPut('master',x);if(fs){const all=[...master];for(let i=0;i<all.length;i+=400){const b=writeBatch(fs);all.slice(i,i+400).forEach(x=>b.set(doc(fs,'employees',x.nik),x,{merge:true}));await b.commit()}}alert(`Master berhasil diimpor: ${master.length.toLocaleString('id-ID')} peserta.\n\nSekarang RANIA menampilkan seluruh master. Pilih Mode Data → MCU per Tanggal untuk operasional harian.`);if($('viewMode'))$('viewMode').value='master';if($('filterAfd'))$('filterAfd').value='';if($('filterStatus'))$('filterStatus').value='';render();ev.target.value=''};
 
-window.exportHistory=()=>{const d=$('date').value;const rows=master.filter(x=>x.schedule===d).map(x=>{const a=attendance[x.nik+'_'+d]||{};return{Tanggal_MCU:d,NIK:x.nik,Nama:x.name,Perusahaan:x.company,AFD:x.afd,Divisi:x.division,Jabatan:x.position,Paket:x.package,Status:a.status||'BELUM HADIR',CheckIn:a.checkInAt||'',MCU_Selesai:a.completedAt||'',UpdatedAt:a.updatedAt||''}});const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'History MCU');XLSX.writeFile(wb,`RANIA_MCU_${d}.xlsx`)};
+window.exportHistory=()=>{
+  const d=$('date').value;
+  const mode=$('viewMode').value||'master';
+  const afd=$('filterAfd').value||'';
+  const statusFilter=$('filterStatus').value||'';
+  const q=$('search').value.trim().toLowerCase();
+  let list=[...master];
+  if(mode==='date') list=list.filter(x=>x.schedule===d);
+  if(afd) list=list.filter(x=>(x.afd||'').trim()===afd);
+  list=list.filter(x=>{
+    const sd=x.schedule;
+    const a=attendance[x.nik+'_'+sd]||{};
+    const st=a.status||'BELUM HADIR';
+    const text=[x.nik,x.name,x.afd,x.company,x.division,x.position,x.package,x.schedule].join(' ').toLowerCase();
+    return (!statusFilter||st===statusFilter) && (!q||text.includes(q));
+  });
+  const rows=list.map(x=>{
+    const sd=x.schedule;
+    const a=attendance[x.nik+'_'+sd]||{};
+    return {Tanggal_MCU:sd,NIK:x.nik,Nama:x.name,Perusahaan:x.company,AFD:x.afd,Divisi:x.division,Jabatan:x.position,Paket:x.package,Status:a.status||'BELUM HADIR',CheckIn:a.checkInAt||'',MCU_Selesai:a.completedAt||'',Tidak_Hadir:a.absentAt||'',UpdatedAt:a.updatedAt||''};
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Info:'Tidak ada data sesuai filter'}]);
+  XLSX.utils.book_append_sheet(wb,ws,'History MCU');
+  XLSX.writeFile(wb,`RANIA_MCU_${mode==='date'?d:'MASTER'}_${Date.now()}.xlsx`);
+};
 
 (async()=>{await localLoad();const cfg=localStorage.getItem('RANIA_FIREBASE_CONFIG');if(cfg){try{await connectFirebase(JSON.parse(cfg))}catch(e){console.warn(e)}}render()})();
 </script>
