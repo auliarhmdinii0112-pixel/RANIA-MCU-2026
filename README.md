@@ -1,8 +1,15 @@
-# RANIA — MCU Control Tower 2026
+# RANIA MCU 2026 — Functional Prototype
 
-Real-time Attendance & MCU Intelligence Analytics
+Functional dashboard prototype:
+- Import Excel (.xlsx/.xls/.csv)
+- Reads AMR and SIP sheets
+- Automatic KPI calculation
+- Participant search
+- Status update with automatic timestamp
+- MCU per hour calculation
+- Company/package breakdown
+- Data quality check
+- Export to Excel
+- Local browser storage
 
-Prototype dashboard. Current version uses demo data.
-Firebase and real MCU master data will be connected in the next stage.
-
-Designed & Powered by Aulia.
+Firebase is not connected yet. This version is intended for GitHub Pages preview/testing.
