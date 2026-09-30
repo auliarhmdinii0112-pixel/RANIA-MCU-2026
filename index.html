@@ -1,3 +1,4 @@
+window.__raniaInitialDateResolved=false;
 <!doctype html>
 <html lang="id">
 <head>
@@ -84,7 +85,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v2.6 • Daily Control Tower + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v2.7 • Daily Control Tower + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -204,6 +205,12 @@ window.getDashboardList=()=>{
   if(status) list=list.filter(x=>(attendance[x.nik+'_'+x.schedule]?.status||'BELUM HADIR')===status);
   return list;
 };
+
+
+function getActiveDate(){
+  const el=document.getElementById('date');
+  return el ? el.value : '';
+}
 
 window.renderFastDashboard=()=>{
   const d=$('date').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'',status=$('filterStatus').value||'';
