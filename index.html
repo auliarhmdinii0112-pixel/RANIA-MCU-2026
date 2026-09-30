@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v1.9 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v2.1 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -204,6 +204,39 @@ window.renderFastDashboard=()=>{
   $('attendanceSummary').innerHTML=`<span class="sync">Kehadiran ${attendancePct}%</span><span class="status s1">Hadir/proses ${had}</span><span class="status s2">Selesai ${done}</span><span class="status s3">Tidak hadir ${abs}</span>`;
   $('operatorTitle').innerHTML=mode==='master'?'Master Peserta MCU — <span style="color:var(--green)">'+targetList.length.toLocaleString('id-ID')+' peserta</span>':'Operator MCU — <span>'+$('dateLabel').textContent+'</span>';
   renderAfdMonitoring(); renderHourly();
+};
+
+window.renderTable=()=>{
+  const d=$('date').value,q=$('search').value.trim().toLowerCase(),f=$('filterStatus').value,mode=$('viewMode').value||'master',afd=$('filterAfd').value||'';
+  let list=[...master];
+  if(mode==='date') list=list.filter(x=>x.schedule===d);
+  if(afd) list=list.filter(x=>(x.afd||'').trim()===afd);
+  list=list.filter(x=>{
+    const sd=mode==='date'?d:x.schedule;
+    const s=attendance[x.nik+'_'+sd]?.status||'BELUM HADIR';
+    return (!f||s===f) && (!q||[x.nik,x.name,x.afd,x.company,x.division,x.position,x.package,x.schedule].join(' ').toLowerCase().includes(q));
+  });
+  const limited=list.slice(0,500);
+  $('rows').innerHTML=limited.map(x=>{
+    const sd=x.schedule;
+    const a=attendance[x.nik+'_'+sd]||{};
+    const s=a.status||'BELUM HADIR';
+    const cls=s==='MCU SELESAI'?'s2':s==='HADIR / PROSES'?'s1':s==='TIDAK HADIR'?'s3':'s0';
+    const schedule=new Date(x.schedule+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    return `<tr>
+      <td><b>${x.nik}</b></td>
+      <td><b>${x.name}</b><div style="font-size:10px;color:var(--muted);margin-top:2px">${x.company||''} ${x.division?'• '+x.division:''} ${x.position?'• '+x.position:''}</div></td>
+      <td>${x.afd}</td><td>${x.package||'-'}</td>
+      <td><span class="status ${cls}">${s}</span></td>
+      <td><small style="display:block;color:var(--muted);margin-bottom:4px">Jadwal: ${schedule}</small>
+        <div class="actions">
+          <button onclick="setStatus('${x.nik}','HADIR / PROSES','${sd}')">Hadir</button>
+          <button class="done" onclick="setStatus('${x.nik}','MCU SELESAI','${sd}')">Selesai</button>
+          <button onclick="setStatus('${x.nik}','TIDAK HADIR','${sd}')">Tidak Hadir</button>
+          <button onclick="setStatus('${x.nik}','BELUM HADIR','${sd}')">Reset</button>
+        </div>
+      </td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">Tidak ada peserta yang sesuai filter.</td></tr>';
 };
 
 window.render=()=>{
