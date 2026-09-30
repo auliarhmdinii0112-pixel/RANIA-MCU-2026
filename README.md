@@ -1,10 +1,8 @@
-# RANIA MCU 2026 v1.4
+# RANIA MCU 2026 v1.5
 
-Dashboard logic refinement:
-- KPI follows selected mode, date, AFD, and attendance state.
-- Historical date cards respect AFD filter.
-- Clicking a historical date switches to MCU per Tanggal mode.
-- Hourly completion monitoring respects date + AFD.
-- Reset truly returns a transaction to BELUM HADIR and clears attendance timestamps.
-- Master mode keeps each employee's own scheduled date for status actions.
-- Local persistence remains IndexedDB; Firebase sync is used when configured.
+- Filters now use an explicit Terapkan Filter action and work together.
+- AFD, Status, Search and Date are applied consistently.
+- Master mode shows all master rows; Date mode restricts to the selected MCU date.
+- Attendance percentage is displayed directly above the participant name/table.
+- Hourly monitoring shows completion percentage and hourly counts.
+- Attendance KPIs are recalculated from the filtered participant set.
