@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
   <div id="history" class="history"></div>
 </section>
 </div>
-<div class="footer">RANIA v1.6 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
+<div class="footer">RANIA v1.7 • Master Persistent + Historical Attendance • Designed & Powered by Aulia</div>
 </main>
 
 <div id="modal" class="modal"><div class="modalbox">
@@ -263,8 +263,8 @@ window.renderHistory=()=>{
 
 
 window.renderAfdMonitoring=()=>{
-  const d=$('date').value, afdFilter=$('filterAfd').value||'';
-  let list=master.filter(x=>x.schedule===d);
+  const d=$('date').value, mode=$('viewMode').value||'master', afdFilter=$('filterAfd').value||'';
+  let list=mode==='date' ? master.filter(x=>x.schedule===d) : [...master];
   if(afdFilter) list=list.filter(x=>(x.afd||'').trim()===afdFilter);
   const groups={};
   list.forEach(x=>{
@@ -273,9 +273,18 @@ window.renderAfdMonitoring=()=>{
     groups[a].push(x);
   });
   const rows=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0],'id')).map(([a,arr])=>{
-    const had=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='HADIR / PROSES').length;
-    const done=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='MCU SELESAI').length;
-    const abs=arr.filter(x=>attendance[x.nik+'_'+d]?.status==='TIDAK HADIR').length;
+    const had=arr.filter(x=>{
+      const sd=mode==='date'?d:x.schedule;
+      return attendance[x.nik+'_'+sd]?.status==='HADIR / PROSES';
+    }).length;
+    const done=arr.filter(x=>{
+      const sd=mode==='date'?d:x.schedule;
+      return attendance[x.nik+'_'+sd]?.status==='MCU SELESAI';
+    }).length;
+    const abs=arr.filter(x=>{
+      const sd=mode==='date'?d:x.schedule;
+      return attendance[x.nik+'_'+sd]?.status==='TIDAK HADIR';
+    }).length;
     const pct=arr.length?Math.round(done/arr.length*100):0;
     return `<tr>
       <td><b>${a}</b><div class="monitor-mini-bar"><i style="width:${pct}%"></i></div></td>
@@ -287,32 +296,51 @@ window.renderAfdMonitoring=()=>{
         <thead><tr><th>AFD</th><th>Total</th><th>Hadir</th><th>Selesai</th><th>TA</th><th>%</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>`
-    : '<div class="empty">Tidak ada peserta pada tanggal/filter ini.</div>';
+    : '<div class="empty">Tidak ada peserta pada mode/filter ini.</div>';
 };
 
 window.renderHourly=()=>{
-  const d=$('date').value,afd=$('filterAfd').value||'';
-  let scheduled=master.filter(x=>x.schedule===d);
-  if(afd)scheduled=scheduled.filter(x=>(x.afd||'').trim()===afd);
+  const d=$('date').value, mode=$('viewMode').value||'master', afd=$('filterAfd').value||'';
   const arr=Array(24).fill(0);
+
   Object.values(attendance).forEach(x=>{
-    if(x.scheduledDate!==d||x.status!=='MCU SELESAI'||!x.completedAt)return;
+    if(x.status!=='MCU SELESAI'||!x.completedAt)return;
+
+    // Mode tanggal = hanya transaksi pada tanggal MCU yang dipilih.
+    // Mode master = seluruh transaksi yang tersimpan, karena operator sedang melihat seluruh master.
+    if(mode==='date' && x.scheduledDate!==d)return;
+
     if(afd){
       const emp=master.find(m=>m.nik===x.nik);
-      if(!emp||String(emp.afd||'').trim()!==afd)return;
+      if(!emp || String(emp.afd||'').trim()!==afd)return;
     }
-    arr[new Date(x.completedAt).getHours()]++;
+
+    const h=new Date(x.completedAt).getHours();
+    if(Number.isFinite(h))arr[h]++;
   });
-  const total=scheduled.length,completed=arr.reduce((a,b)=>a+b,0),pct=total?Math.round(completed/total*100):0;
+
+  let denominator;
+  if(mode==='date'){
+    denominator=master.filter(x=>x.schedule===d && (!afd || String(x.afd||'').trim()===afd)).length;
+  }else{
+    denominator=master.filter(x=>!afd || String(x.afd||'').trim()===afd).length;
+  }
+
+  const completed=arr.reduce((a,b)=>a+b,0);
+  const pct=denominator?Math.round(completed/denominator*100):0;
+
   $('hourlyTop').innerHTML=
     `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <b>Kehadiran / penyelesaian per jam</b><span class="sync">${pct}% selesai</span>
+      <b>Kehadiran / penyelesaian per jam</b>
+      <span class="sync">${pct}% selesai</span>
     </div>`+
-    (arr.some(Boolean)?arr.map((n,h)=>n?`<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
-      <b style="width:42px">${String(h).padStart(2,'0')}:00</b>
-      <div class="bar" style="flex:1"><i style="width:${Math.round(n/Math.max(1,...arr)*100)}%"></i></div>
-      <b>${n}</b>
-    </div>`:'').join(''):'<div class="empty">Belum ada transaksi MCU selesai pada tanggal ini.</div>');
+    (arr.some(Boolean)
+      ? arr.map((n,h)=>n?`<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+          <b style="width:42px">${String(h).padStart(2,'0')}:00</b>
+          <div class="bar" style="flex:1"><i style="width:${Math.round(n/Math.max(1,...arr)*100)}%"></i></div>
+          <b>${n}</b>
+        </div>`:'').join('')
+      : `<div class="empty">${mode==='date'?'Belum ada transaksi MCU selesai pada tanggal ini.':'Belum ada transaksi MCU selesai tersimpan.'}</div>`);
 };
 
 window.importExcel=async ev=>{const file=ev.target.files[0];if(!file)return;const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:true});const out=[];for(const sn of ['AMR','SIP']){const ws=wb.Sheets[sn];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{defval:''});for(const r of rows){const nik=String(r['Emp No']??r['NIK']??r['Employee ID']??'').trim();const name=String(r['Name']??r['Nama']??'').trim();const conf=String(r['Konfirmasi data HRGA']??r['Konfirmasi']??'').trim().toUpperCase();if(!nik||!name||conf==='TIDAK')continue;let dt=r['Jadwal MCU']??r['Tanggal MCU']??'';if(dt instanceof Date)dt=dt.toISOString().slice(0,10);else if(dt){
