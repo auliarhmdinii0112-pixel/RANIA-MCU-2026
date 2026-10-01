@@ -1,3 +1,4 @@
-# RANIA MCU 2026 v2.4
+# RANIA MCU Dashboard
 
-Perbaikan utama: Reset transaksi MCU sekarang benar-benar menghapus record attendance dari IndexedDB dan Firestore (jika terhubung), bukan menyimpan record baru berstatus BELUM HADIR. Master peserta tetap aman. Logic Hadir, Selesai, Tidak Hadir, monitoring AFD/jam, historical, filter global, dan export Excel dipertahankan.
+Black-Pink UI revision using the uploaded AURELIA logic as the functional baseline.
+The application logic was preserved; only visible branding/theme styling was revised.
